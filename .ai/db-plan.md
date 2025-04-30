@@ -1,71 +1,207 @@
-# Schemat bazy danych PostgreSQL
+# Schemat bazy danych dla 10xCards
 
-## 1. Tabele i kolumny
+## 1. Tabele, kolumny, typy danych i ograniczenia
 
-### 1.1. tabela: users
-- id: uuid, primary key, default gen_random_uuid() (wymaga rozszerzenia pgcrypto lub uuid-ossp)
-- email: varchar, not null, unique
-- hash_hasła: text, not null
-- data_utworzenia: timestamptz, not null, default now()
-- data_modyfikacji: timestamptz, not null, default now()
-- confirmed_at: timestamptz, nullable
+### Tabela `users`
 
-### 1.2. tabela: flashcards
-- id: uuid, primary key, default gen_random_uuid()
-- user_id: uuid, not null, references users(id) on delete cascade
-- front: varchar(200), not null, check (char_length(front) <= 200)
-- back: varchar(500), not null, check (char_length(back) <= 500)
-- status: varchar, not null, check (status in ('do zatwierdzenia','zaakceptowana','odrzucona'))
-- source: varchar, not null, check (source in ('ai','user'))
-- next_review_at: timestamptz, nullable
-- review_count: integer, not null, default 0
-- easiness_factor: numeric, not null, default 2.5, check (easiness_factor >= 1)
-- data_utworzenia: timestamptz, not null, default now()
+This table is managed by Supabase Auth.
 
-### 1.3. tabela: generations
-- id: uuid, primary key, default gen_random_uuid()
-- user_id: uuid, not null, references users(id) on delete cascade
-- model: varchar, not null
-- generated_count: integer, not null
-- accepted_unedited_count: integer, not null
-- accepted_edited_count: integer, not null
-- source_text_hash: varchar, not null
-- source_text_length: integer, not null
-- data_utworzenia: timestamptz, not null, default now()
+| Kolumna | Typ | Ograniczenia | Opis |
+|---------|-----|--------------|------|
+| id | UUID | PRIMARY KEY, DEFAULT uuid_generate_v4() | Unikalny identyfikator użytkownika |
+| email | VARCHAR(255) | UNIQUE, NOT NULL | Adres email użytkownika |
+| password_hash | VARCHAR(255) | NOT NULL | Zahaszowane hasło użytkownika |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT now() | Data utworzenia konta |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT now() | Data ostatniej aktualizacji konta |
+| confirmed_at | TIMESTAMP | NULL | Data potwierdzenia konta (null oznacza brak potwierdzenia) |
 
-### 1.4. tabela: generation_error_logs
-- id: uuid, primary key, default gen_random_uuid()
-- user_id: uuid, not null, references users(id) on delete cascade
-- model: varchar, not null
-- source_text_hash: varchar, not null
-- source_text_length: integer, not null
-- error_code: varchar, not null
-- error_message: text, not null
-- data_utworzenia: timestamptz, not null, default now()
+### Tabela `flashcards`
+| Kolumna | Typ | Ograniczenia | Opis |
+|---------|-----|--------------|------|
+| id | UUID | PRIMARY KEY, DEFAULT uuid_generate_v4() | Unikalny identyfikator fiszki |
+| user_id | UUID | NOT NULL, REFERENCES users(id) ON DELETE CASCADE | Powiązanie z użytkownikiem |
+| front | VARCHAR(200) | NOT NULL, CHECK (length(front) <= 200) | Przód fiszki (pytanie) |
+| back | VARCHAR(500) | NOT NULL, CHECK (length(back) <= 500) | Tył fiszki (odpowiedź) |
+| status | VARCHAR(20) | NOT NULL, CHECK (status IN ('pending', 'accepted', 'rejected')) | Status fiszki |
+| source | VARCHAR(10) | NOT NULL, CHECK (source IN ('ai', 'user')) | Źródło utworzenia fiszki |
+| next_review_at | TIMESTAMP | NULL | Data następnej powtórki |
+| review_count | INTEGER | NOT NULL, DEFAULT 0 | Liczba wykonanych powtórek |
+| easiness_factor | NUMERIC | NOT NULL, DEFAULT 2.5, CHECK (easiness_factor >= 1.0) | Współczynnik łatwości fiszki |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT now() | Data utworzenia fiszki |
+| updated_at | TIMESTAMP | NOT NULL, DEFAULT now() | Data ostatniej aktualizacji fiszki |
+
+### Tabela `generations`
+| Kolumna | Typ | Ograniczenia | Opis |
+|---------|-----|--------------|------|
+| id | UUID | PRIMARY KEY, DEFAULT uuid_generate_v4() | Unikalny identyfikator generacji |
+| user_id | UUID | NOT NULL, REFERENCES users(id) ON DELETE CASCADE | Powiązanie z użytkownikiem |
+| model | VARCHAR(50) | NOT NULL | Nazwa modelu AI użytego do generacji |
+| generated_count | INTEGER | NOT NULL, DEFAULT 0 | Liczba wygenerowanych fiszek |
+| accepted_unedited_count | INTEGER | NOT NULL, DEFAULT 0 | Liczba zaakceptowanych fiszek bez edycji |
+| accepted_edited_count | INTEGER | NOT NULL, DEFAULT 0 | Liczba zaakceptowanych fiszek po edycji |
+| source_text_hash | VARCHAR(64) | NOT NULL | Hash tekstu źródłowego |
+| source_text_length | INTEGER | NOT NULL | Długość tekstu źródłowego |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT now() | Data generacji |
+
+### Tabela `generation_error_logs`
+| Kolumna | Typ | Ograniczenia | Opis |
+|---------|-----|--------------|------|
+| id | UUID | PRIMARY KEY, DEFAULT uuid_generate_v4() | Unikalny identyfikator błędu |
+| user_id | UUID | NOT NULL, REFERENCES users(id) ON DELETE CASCADE | Powiązanie z użytkownikiem |
+| model | VARCHAR(50) | NOT NULL | Nazwa modelu AI |
+| source_text_hash | VARCHAR(64) | NOT NULL | Hash tekstu źródłowego |
+| source_text_length | INTEGER | NOT NULL | Długość tekstu źródłowego |
+| error_code | VARCHAR(50) | NULL | Kod błędu |
+| error_message | TEXT | NOT NULL | Treść komunikatu błędu |
+| created_at | TIMESTAMP | NOT NULL, DEFAULT now() | Data wystąpienia błędu |
 
 ## 2. Relacje między tabelami
-- tabela "users" ma relację 1-do-wielu z tabelami:
-  - flashcards (klucz: user_id)
-  - generations (klucz: user_id)
-  - generation_error_logs (klucz: user_id)
+
+1. **Użytkownik do Fiszek (1:N)**
+   - Jeden użytkownik może posiadać wiele fiszek
+   - Fiszki należą tylko do jednego użytkownika
+   - Klucz obcy: `flashcards.user_id` referuje do `users.id` z opcją `ON DELETE CASCADE`
+
+2. **Użytkownik do Generacji (1:N)**
+   - Jeden użytkownik może mieć wiele generacji
+   - Generacja należy tylko do jednego użytkownika
+   - Klucz obcy: `generations.user_id` referuje do `users.id` z opcją `ON DELETE CASCADE`
+
+3. **Użytkownik do Logów błędów generacji (1:N)**
+   - Jeden użytkownik może mieć wiele logów błędów
+   - Log błędu należy tylko do jednego użytkownika
+   - Klucz obcy: `generation_error_logs.user_id` referuje do `users.id` z opcją `ON DELETE CASCADE`
 
 ## 3. Indeksy
-- tabela flashcards:
-  - indeks na kolumnie user_id
-  - indeks na kolumnie data_utworzenia
-- tabele generations oraz generation_error_logs:
-  - indeksy na kolumnie user_id (dla optymalizacji zapytań)
 
-## 4. Polityki bezpieczeństwa (RLS)
-- w tabeli "flashcards" włączone są polityki RLS:
-  - POLITYKA SELECT: umożliwia odczyt wierszy, gdzie flashcards.user_id = current_setting('app.current_user')::uuid
-  - POLITYKA INSERT: umożliwia dodawanie wierszy, jeśli flashcards.user_id = current_setting('app.current_user')::uuid
-  - POLITYKA UPDATE: umożliwia aktualizację tylko dla właściciela rekordu
-  - POLITYKA DELETE: umożliwia usuwanie tylko przez właściciela rekordu
+### Tabela `users`
+- Automatyczny indeks na kluczu głównym `id`
+- Indeks na kolumnie `email` (już zdefiniowany przez ograniczenie UNIQUE)
 
-*(Podobne polityki RLS należy zaimplementować w tabelach "generations" i "generation_error_logs" w celu zapewnienia bezpieczeństwa dostępu.)*
+### Tabela `flashcards`
+- Automatyczny indeks na kluczu głównym `id`
+- Indeks na kolumnie `user_id` dla szybkiego wyszukiwania fiszek użytkownika
+- Indeks na kolumnie `created_at` dla optymalnej paginacji
+- Indeks na kolumnie `next_review_at` dla efektywnego wyszukiwania fiszek do powtórki
+- Indeks na kolumnach `user_id, status` dla filtrowania fiszek według statusu
 
-## 5. Dodatkowe uwagi
-- mechanizmy audytu: dla tabeli "flashcards" warto wdrożyć triggery monitorujące krytyczne operacje (INSERT, UPDATE, DELETE)
-- synchronizacja typów danych: definicje kolumn są zgodne z typami wykorzystywanymi w aplikacji TypeScript i przez Supabase
-- upewnij się, że wymagane rozszerzenia PostgreSQL (np. pgcrypto lub uuid-ossp) są zainstalowane do generowania wartości UUID 
+### Tabela `generations`
+- Automatyczny indeks na kluczu głównym `id`
+- Indeks na kolumnie `user_id` dla szybkiego wyszukiwania generacji użytkownika
+- Indeks na kolumnie `created_at` dla paginacji
+
+### Tabela `generation_error_logs`
+- Automatyczny indeks na kluczu głównym `id`
+- Indeks na kolumnie `user_id` dla szybkiego wyszukiwania logów użytkownika
+
+## 4. Zasady PostgreSQL Row Level Security (RLS)
+
+### Tabela `users`
+```sql
+-- Pozwala użytkownikowi na dostęp tylko do własnego rekordu
+CREATE POLICY users_policy ON users
+    USING (id = auth.uid());
+```
+
+### Tabela `flashcards`
+```sql
+-- Polityka SELECT - użytkownik może przeglądać tylko swoje fiszki
+CREATE POLICY flashcards_select_policy ON flashcards
+    FOR SELECT USING (user_id = auth.uid());
+
+-- Polityka INSERT - użytkownik może dodawać fiszki tylko do własnego konta
+CREATE POLICY flashcards_insert_policy ON flashcards
+    FOR INSERT WITH CHECK (user_id = auth.uid());
+
+-- Polityka UPDATE - użytkownik może aktualizować tylko swoje fiszki
+CREATE POLICY flashcards_update_policy ON flashcards
+    FOR UPDATE USING (user_id = auth.uid());
+
+-- Polityka DELETE - użytkownik może usuwać tylko swoje fiszki
+CREATE POLICY flashcards_delete_policy ON flashcards
+    FOR DELETE USING (user_id = auth.uid());
+```
+
+### Tabela `generations`
+```sql
+-- Polityka SELECT - użytkownik może przeglądać tylko swoje generacje
+CREATE POLICY generations_select_policy ON generations
+    FOR SELECT USING (user_id = auth.uid());
+
+-- Polityka INSERT - użytkownik może dodawać generacje tylko do własnego konta
+CREATE POLICY generations_insert_policy ON generations
+    FOR INSERT WITH CHECK (user_id = auth.uid());
+```
+
+### Tabela `generation_error_logs`
+```sql
+-- Polityka SELECT - użytkownik może przeglądać tylko swoje logi błędów
+CREATE POLICY generation_error_logs_select_policy ON generation_error_logs
+    FOR SELECT USING (user_id = auth.uid());
+
+-- Polityka INSERT - użytkownik może dodawać logi błędów tylko do własnego konta
+CREATE POLICY generation_error_logs_insert_policy ON generation_error_logs
+    FOR INSERT WITH CHECK (user_id = auth.uid());
+```
+
+## 5. Wyzwalacze (Triggers)
+
+### Trigger aktualizacji pola `updated_at` dla tabeli `users`
+```sql
+CREATE OR REPLACE FUNCTION update_users_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_users_updated_at_trigger
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION update_users_updated_at();
+```
+
+### Trigger aktualizacji pola `updated_at` dla tabeli `flashcards`
+```sql
+CREATE OR REPLACE FUNCTION update_flashcards_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_flashcards_updated_at_trigger
+BEFORE UPDATE ON flashcards
+FOR EACH ROW
+EXECUTE FUNCTION update_flashcards_updated_at();
+```
+
+## 6. Dodatkowe uwagi i wyjaśnienia
+
+1. **Typy statusów fiszek:**
+   - `pending` - fiszki wygenerowane przez AI, czekające na decyzję
+   - `accepted` - fiszki zaakceptowane przez użytkownika
+   - `rejected` - fiszki odrzucone przez użytkownika
+
+2. **Powtórki:**
+   - Pole `next_review_at` określa kiedy fiszka powinna zostać ponownie pokazana
+   - Pola `review_count` i `easiness_factor` są używane przez algorytm powtórek do obliczania `next_review_at`
+
+3. **Bezpieczeństwo:**
+   - Użycie RLS zapewnia, że użytkownik ma dostęp tylko do swoich danych
+   - Wszystkie wrażliwe operacje są chronione przez RLS
+   - Hasła są przechowywane jako hashe, nigdy jako plain text
+
+4. **Śledzenie generacji AI:**
+   - Tabela `generations` przechowuje statystyki dotyczące generacji fiszek
+   - Tabela `generation_error_logs` rejestruje błędy podczas generacji
+
+5. **Limity długości**:
+   - Pola `front` i `back` mają ograniczenia zgodne z wymaganiami biznesowymi (odpowiednio 200 i 500 znaków)
+   - Ograniczenia są wymuszane zarówno na poziomie bazy danych (CHECK), jak i w aplikacji
+
+6. **Audyt**:
+   - Wszystkie tabele zawierają pola `created_at` i `updated_at` dla śledzenia zmian
+   - Triggery automatycznie aktualizują pole `updated_at` przy każdej modyfikacji rekordu 

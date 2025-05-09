@@ -11,6 +11,7 @@
     "check": "prettier --check \"**/*.{ts,tsx,js,jsx,md,mdx,css,yaml,yml}\""
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
     "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
@@ -31,7 +32,6 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   },
-
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
       "eslint --fix"

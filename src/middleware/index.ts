@@ -6,9 +6,6 @@ export function middleware(request: NextRequest) {
 	const response = NextResponse.next();
 	response.headers.set('x-middleware-cache', 'no-cache');
 
-	// Tutaj możemy dodać logikę dla uwierzytelniania Supabase
-	// poprzez sprawdzenie plików cookie z tokenami
-
 	return response;
 }
 

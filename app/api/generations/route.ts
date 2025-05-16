@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
 	} catch (error: unknown) {
 		console.error('Nieoczekiwany błąd:', error);
 
-		const errorMessage = error instanceof Error ? error.message : 'Nieznany błąd';
+		const errorMessage =
+			error instanceof Error ? error.message : 'Nieznany błąd';
 
 		return NextResponse.json(
 			{

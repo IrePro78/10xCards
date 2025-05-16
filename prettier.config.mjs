@@ -4,6 +4,7 @@ const config = {
 	trailingComma: 'all',
 	printWidth: 70,
 	useTabs: true,
+	endOfLine: 'lf',
 	plugins: ['prettier-plugin-tailwindcss'],
 	// tailwindConfig: './tailwind.config.ts',
 };

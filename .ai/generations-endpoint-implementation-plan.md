@@ -1,100 +1,98 @@
 # API Endpoint Implementation Plan: POST /generations
 
 ## 1. Przegląd punktu końcowego
-Endpoint ten służy do inicjacji sesji generacji AI poprzez przesłanie tekstu źródłowego (source_text). Po walidacji tekstu, system wywołuje logikę AI do przetworzenia treści, tworzy rekord w tabeli `generations` oraz zwraca kandydatów na fiszki dla dalszej weryfikacji przez użytkownika.
+
+Endpoint służy do inicjowania sesji generacji fiszek przy użyciu AI. Po przesłaniu tekstu źródłowego (o długości od 1000 do 10000 znaków) system tworzy rekord w tabeli `generations` i rozpoczyna proces generacji kandydujących fiszek. Wynikiem jest zwrócenie danych sesji wraz z ewentualnymi kandydatami fiszek.
 
 ## 2. Szczegóły żądania
+
 - **Metoda HTTP:** POST
-- **URL:** /generations
+- **Struktura URL:** /generations
 - **Parametry:**
-  - **Body (JSON):**
-    - *Obowiązkowy:* `source_text` (string) – tekst źródłowy o długości od 1000 do 10000 znaków
+  - **Wymagane:**
+    - Request Body: JSON z kluczem `source_text` (string, 1000-10000 znaków)
+  - **Opcjonalne:** brak
 
-**Przykład request body:**
-```json
-{
-  "source_text": "przykładowy tekst, który musi mieć co najmniej 1000 znaków..."
-}
-```
+## 3. Wykorzystywane typy
 
-## 3. Wykorzystywane typy (DTO i Command Modele)
-- **GenerationCreationDTO:**
-  - Pola: `source_text`
-- **GenerationResponseDTO:**
-  - Pola: `id` (uuid), `user_id` (uuid), `model` (string), `generated_count` (integer), `accepted_unedited_count` (integer), `accepted_edited_count` (integer), `source_text_hash` (string), `source_text_length` (integer), `generation_duration` (integer lub null), `created_at` (timestamp), `updated_at` (timestamp), `candidate_flashcards` (lista obiektów z polami `front` i `back`)
-- **Walidacja:** Schemat walidacji (np. Zod) definiowany zgodnie z referencjami do definicji typów (@types) oraz zasadami z @backend.mdc i @shared.mdc.
+- **DTO i Command Modele:**
+  - `CreateGenerationCommandDto` (definicja w @types) – zawiera pole: `source_text`.
+  - `GenerationDto` (definicja w @types) – pełne dane sesji generacji.
+  - `GenerationCandidateDto` (definicja w @types) – reprezentuje pojedynczego kandydata fiszki.
+  - `GenerationWithCandidatesDto` (definicja w @types) – rozszerzony typ sesji generacji z dołączonymi kandydatami.
 
 ## 4. Szczegóły odpowiedzi
-- **Kod sukcesu:** 201 Created
+
+- **Kod odpowiedzi:**
+  - 201 Created – sesja generacji została pomyślnie utworzona.
 - **Struktura odpowiedzi (przykład):**
-```json
-{
-  "id": "uuid",
-  "user_id": "uuid",
-  "model": "nazwa_modelu",
-  "generated_count": 0,
-  "accepted_unedited_count": 0,
-  "accepted_edited_count": 0,
-  "source_text_hash": "hash",
-  "source_text_length": 1234,
-  "generation_duration": null,
-  "created_at": "timestamp",
-  "updated_at": "timestamp",
-  "candidate_flashcards": [
-    { "front": "przykładowy front", "back": "przykładowy back" }
-  ]
-}
-```
-- **Błędy:**
-  - 400 Bad Request – nieprawidłowe dane wejściowe (np. zła długość tekstu)
+  ```json
+  {
+  	"id": "uuid",
+  	"user_id": "uuid",
+  	"model": "nazwa_modelu",
+  	"generated_count": 0,
+  	"accepted_unedited_count": 0,
+  	"accepted_edited_count": 0,
+  	"source_text_hash": "hash",
+  	"source_text_length": 1234,
+  	"generation_duration": null,
+  	"created_at": "timestamp",
+  	"updated_at": "timestamp",
+  	"candidate_flashcards": [
+  		{
+  			"front": "przykładowy tekst",
+  			"back": "przykładowa odpowiedź"
+  		}
+  	]
+  }
+  ```
+- **Inne kody statusu:**
+  - 400 Bad Request – błędne dane wejściowe (np. nieodpowiednia długość `source_text`)
   - 401 Unauthorized – brak autoryzacji
-  - 500 Internal Server Error – błędy wewnętrzne, np. podczas przetwarzania AI lub operacji na bazie danych
+  - 500 Internal Server Error – błąd po stronie serwera
 
 ## 5. Przepływ danych
-1. Klient wysyła żądanie POST na `/generations` z polem `source_text` w ciele żądania.
-2. Warstwa kontrolera autoryzuje użytkownika na podstawie JWT (Supabase Auth) oraz weryfikuje zgodność z RLS.
-3. Żądanie trafia do warstwy service, np. `GenerationService`, gdzie:
-   - Walidowana jest długość `source_text` (min 1000, max 10000 znaków).
-   - Obliczany jest hash tekstu oraz jego długość.
-   - Inicjowana jest sesja przetwarzania AI (wywołanie odpowiedniego modułu/serwisu zewnętrznego) w celu wygenerowania kandydatów na fiszki.
-   - Tworzony jest rekord w tabeli `generations` powiązany z aktualnym użytkownikiem.
-   - W przypadku niepowodzenia przetwarzania AI, błąd jest logowany w tabeli `generation_error_logs`.
-4. Wynik operacji (dane wygenerowane przez AI oraz dane rekordu) jest zwracany do kontrolera, a następnie jako odpowiedź JSON do klienta.
+
+1. Klient wysyła żądanie POST do `/generations` z ciałem zawierającym `source_text`.
+2. Middleware autoryzacji weryfikuje token JWT i ustala `user_id`.
+3. Warstwa walidacji (np. Zod) sprawdza, czy `source_text` spełnia wymagania dotyczące długości.
+4. Warstwa serwisowa:
+   - Tworzy rekord w tabeli `generations` zgodnie z danymi użytkownika (wg RLS z @db-plan.md).
+   - Inicjuje asynchroniczny proces generacji fiszek przy użyciu zewnętrznego API AI (jeśli dotyczy).
+5. W przypadku błędów, rejestrowane są wpisy w tabeli `generation_error_logs`.
+6. Ostatecznie, endpoint zwraca dane utworzonej sesji generacji wraz z ewentualnymi kandydatami fiszek.
 
 ## 6. Względy bezpieczeństwa
-- **Autoryzacja:** Użycie Supabase Auth oraz RLS w tabelach `users`, `generations`, `flashcards` i `generation_error_logs` zapewnia, że użytkownik ma dostęp tylko do swoich danych.
-- **Walidacja wejścia:** Dokładna walidacja `source_text` zapewniająca, że jego długość mieści się w wymaganym zakresie, eliminuje potencjalne ataki poprzez nieprawidłowe dane wejściowe.
-- **Bezpieczeństwo danych:** Przed zapisaniem, obliczany jest hash tekstu źródłowego, co pozwala na weryfikację integralności danych.
-- **Logowanie błędów:** W przypadku błędów przetwarzania AI, błędy są rejestrowane w tabeli `generation_error_logs`.
+
+- **Autoryzacja:** Wymagany poprawny token JWT; dostęp tylko do własnych zasobów dzięki politykom RLS (zgodne z @db-plan.md).
+- **Walidacja danych:** Sprawdzenie długości `source_text` (1000-10000 znaków) przed dalszym przetwarzaniem.
+- **Ochrona przed nadużyciami:** Ograniczenie rozmiaru wejścia oraz logika zabezpieczająca przed SQL Injection.
 
 ## 7. Obsługa błędów
-- **400 Bad Request:** Walidacja tekstu źródłowego nie spełnia wymagań (długość poniżej 1000 lub powyżej 10000 znaków).
-- **401 Unauthorized:** Użytkownik nie przeszedł autoryzacji lub token JWT jest nieprawidłowy.
-- **500 Internal Server Error:** Błąd po stronie serwera, np. problem z przetwarzaniem AI, błąd w interakcji z bazą danych.
+
+- **Błędy walidacji:**
+  - 400 Bad Request, gdy `source_text` nie spełnia wymagań długości.
+- **Błędy autoryzacji:**
+  - 401 Unauthorized, gdy token jest nieprawidłowy lub nieobecny.
+- **Błędy serwera:**
+  - 500 Internal Server Error w przypadku nieoczekiwanych wyjątków.
+- **Logowanie błędów:**
+  - Błędy zapisywane w tabeli `generation_error_logs` (informacje o modelu, hashu tekstu źródłowego, komunikat błędu).
 
 ## 8. Rozważania dotyczące wydajności
-- Wstępna walidacja danych wejściowych przed przeprowadzeniem kosztownych operacji (np. wywołanie modułu AI).
-- Użycie indeksów w tabelach, szczególnie `generations` i `users`, dla szybkiego zapisu i pobierania danych.
-- Asynchroniczne wywołanie zewnętrznych serwisów AI, jeśli przetwarzanie może być długotrwałe, aby nie blokować odpowiedzi API.
-- Monitorowanie wydajności i obciążenia w celu skalowania usług w razie potrzeby.
+
+- Indeksowanie kluczowych pól w bazie danych (np. `user_id`, `created_at`) w celu szybkiego przetwarzania zapytań.
+- Asynchroniczne przetwarzanie generacji AI, aby nie blokować odpowiedzi dla klienta.
+- Monitorowanie obciążenia serwera oraz skalowanie w razie potrzeby.
 
 ## 9. Etapy wdrożenia
-1. **Definicja typów i walidacja:**
-   - Utworzenie DTO: `GenerationCreationDTO` oraz `GenerationResponseDTO` wykorzystujących definicje z @types (odwołanie do pliku @database.types.ts).
-   - Implementacja walidacji wejścia przy użyciu Zod lub innej biblioteki walidacyjnej, zgodnie z wytycznymi z @backend.mdc.
-2. **Implementacja warstwy serwisowej:**
-   - Utworzenie `GenerationService` odpowiedzialnego za logikę biznesową, w tym walidację wejścia, wywołanie przetwarzania AI, obliczenia hash, oraz tworzenie rekordu w tabeli `generations`.
-   - Integracja mechanizmu logowania błędów do tabeli `generation_error_logs` w przypadku wystąpienia problemów podczas wywołania AI.
-3. **Implementacja kontrolera endpointu:**
-   - Utworzenie kontrolera (np. w ramach Next.js API routes lub odpowiedniego frameworka backendowego) obsługującego żądania POST na `/generations`.
-   - Autoryzacja użytkownika oraz przekazanie danych do `GenerationService`.
-   - Obsługa odpowiedzi: zwracanie 201 Created lub odpowiednich kodów błędów zgodnie z opisem.
-4. **Integracja z Supabase:**
-   - Zapewnienie, że operacje na bazie danych są zgodne z politykami RLS zdefiniowanymi w bazie.
-   - Testy integracyjne w środowisku z autoryzacją i uwierzytelnianiem użytkownika.
-5. **Testowanie:**
-   - Przeprowadzenie testów jednostkowych i integracyjnych dla walidacji, logiki biznesowej oraz obsługi błędów.
-   - Symulacja różnych scenariuszy (poprawne dane, niepoprawne dane, błędy AI, brak autoryzacji).
-6. **Dokumentacja i monitoring:**
-   - Aktualizacja dokumentacji API (np. Swagger) z opisem endpointu.
-   - Wdrożenie mechanizmów monitorujących wydajność i logi błędów. 
+
+1. Zdefiniowanie trasy (route) dla endpointu POST `/generations` w projekcie backendowym.
+2. Implementacja middleware autoryzującego żądania i ekstrakcji `user_id` z tokena JWT.
+3. Dodanie walidacji wejściowego `source_text` (np. przy użyciu Zod) w kontrolerze.
+4. Utworzenie lub rozszerzenie warstwy serwisowej (np. generations.service) odpowiedzialnej za:
+   - Tworzenie rekordu w tabeli `generations`.
+   - Inicjowanie procesu asynchronicznej generacji fiszek przez AI. Na etapie developmentu skorzystamy z mocków zamiast wywoływania serwisu AI.
+5. Implementacja mechanizmu logowania błędów do tabeli `generation_error_logs`.
+6. Integracja operacji z bazą danych według zasad @db-plan.md (RLS, relacje między tabelami).

@@ -23,9 +23,9 @@ alwaysApply: true
 
 When introducing changes to the project, always follow the directory structure below:
 
-- `./src`, `./app` - source code
+- `./src` - source code
 - `./app` - Next pages
-- `./src/api` - API endpoints
+- `./app/api` - API endpoints
 - `./src/db` - Supabase clients and types
 - `./src/types/*.ts` - Shared types for backend and frontend (Entities, DTOs)
 - `./src/middleware/index.ts` - Next middleware

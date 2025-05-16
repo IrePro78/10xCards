@@ -12,6 +12,7 @@
 ### 2.2 Flashcards Endpoints
 
 - **GET /flashcards**
+
   - **Description:** Retrieve a paginated list of the user's flashcards.
   - **Query Parameters:**
     - `page` (number, default: 1)
@@ -21,76 +22,78 @@
   - **Response:**
     ```json
     {
-      "flashcards": [
-        {
-          "id": "uuid",
-          "front": "string",
-          "back": "string",
-          "source": "ai/user",
-          "created_at": "timestamp",
-          "updated_at": "timestamp"
-        }
-      ],
-      "pagination": {
-        "page": 1,
-        "per_page": 10,
-        "total_pages": 5,
-        "total_items": 50
-      }
+    	"flashcards": [
+    		{
+    			"id": "uuid",
+    			"front": "string",
+    			"back": "string",
+    			"source": "ai/user",
+    			"created_at": "timestamp",
+    			"updated_at": "timestamp"
+    		}
+    	],
+    	"pagination": {
+    		"page": 1,
+    		"per_page": 10,
+    		"total_pages": 5,
+    		"total_items": 50
+    	}
     }
     ```
   - **Success:** 200 OK
   - **Errors:** 401 Unauthorized
 
 - **GET /flashcards/{id}**
+
   - **Description:** Retrieve details for a specific flashcard.
   - **URL Parameter:** `id` – UUID of the flashcard.
   - **Response:**
     ```json
     {
-      "id": "uuid",
-      "user_id": "uuid",
-      "generation_id": "uuid or null",
-      "front": "string",
-      "back": "string",
-      "source": "ai/user",
-      "created_at": "timestamp",
-      "updated_at": "timestamp"
+    	"id": "uuid",
+    	"user_id": "uuid",
+    	"generation_id": "uuid or null",
+    	"front": "string",
+    	"back": "string",
+    	"source": "ai/user",
+    	"created_at": "timestamp",
+    	"updated_at": "timestamp"
     }
     ```
   - **Success:** 200 OK
   - **Errors:** 401 Unauthorized, 404 Not Found
 
 - **POST /flashcards**
+
   - **Description:** Create a new flashcard (manual creation).
   - **Request Body:**
     ```json
     {
-      "flashcards": [
-        {
-          "front": "string (max 200 characters)",
-          "back": "string (max 500 characters)",
-          "source": "manual/ai/edited",
-          "generation_id": "uuid (opcjonalne, tylko dla fiszek z AI)"
-        }
-      ]
+    	"flashcards": [
+    		{
+    			"front": "string (max 200 characters)",
+    			"back": "string (max 500 characters)",
+    			"source": "manual/ai/edited",
+    			"generation_id": "uuid (opcjonalne, tylko dla fiszek z AI)"
+    		}
+    	]
     }
     ```
   - **Response:**
     ```json
     {
-      "flashcards": [
-        {
-          "id": "uuid",
-          "user_id": "uuid",
-          "front": "string",
-          "back": "string",
-          "source": "user/ai/edited",
-          "generation_id": "uuid or null",
-          "created_at": "timestamp",
-          "updated_at": "timestamp"
-        }
-      ]
+    	"flashcards": [
+    		{
+    			"id": "uuid",
+    			"user_id": "uuid",
+    			"front": "string",
+    			"back": "string",
+    			"source": "user/ai/edited",
+    			"generation_id": "uuid or null",
+    			"created_at": "timestamp",
+    			"updated_at": "timestamp"
+    		}
+    	]
     }
     ```
   - **Validation:** Enforce character limits on `front` and `back`.
@@ -98,22 +101,23 @@
   - **Errors:** 400 Bad Request, 401 Unauthorized
 
 - **PUT /flashcards/{id}**
+
   - **Description:** Update an existing flashcard (e.g., for review edits).
   - **URL Parameter:** `id` – flashcard UUID.
   - **Request Body:**
     ```json
     {
-      "front": "string (optional, max 200 characters)",
-      "back": "string (optional, max 500 characters)"
+    	"front": "string (optional, max 200 characters)",
+    	"back": "string (optional, max 500 characters)"
     }
     ```
   - **Response:**
     ```json
     {
-      "id": "uuid",
-      "front": "string",
-      "back": "string",
-      "updated_at": "timestamp"
+    	"id": "uuid",
+    	"front": "string",
+    	"back": "string",
+    	"updated_at": "timestamp"
     }
     ```
   - **Validation:** Check field lengths and resource ownership.
@@ -133,53 +137,55 @@
 ### 2.3 Generations Endpoints (AI Flashcard Generation)
 
 - **POST /generations**
+
   - **Description:** Initiate an AI generation session by submitting source text.
   - **Request Body:**
     ```json
     {
-      "source_text": "string (min 1000 and max 10000 characters)",
+    	"source_text": "string (min 1000 and max 10000 characters)"
     }
     ```
   - **Business Logic:** Validate text length, trigger AI processing, and create a generation record. Candidate flashcards are returned for review.
   - **Response:**
     ```json
     {
-      "id": "uuid",
-      "user_id": "uuid",
-      "model": "string",
-      "generated_count": 0,
-      "accepted_unedited_count": 0,
-      "accepted_edited_count": 0,
-      "source_text_hash": "string",
-      "source_text_length": 1234,
-      "generation_duration": null,
-      "created_at": "timestamp",
-      "updated_at": "timestamp",
-      "candidate_flashcards": [
-        { "front": "string", "back": "string" }
-      ]
+    	"id": "uuid",
+    	"user_id": "uuid",
+    	"model": "string",
+    	"generated_count": 0,
+    	"accepted_unedited_count": 0,
+    	"accepted_edited_count": 0,
+    	"source_text_hash": "string",
+    	"source_text_length": 1234,
+    	"generation_duration": null,
+    	"created_at": "timestamp",
+    	"updated_at": "timestamp",
+    	"candidate_flashcards": [
+    		{ "front": "string", "back": "string" }
+    	]
     }
     ```
   - **Success:** 201 Created
   - **Errors:** 400 Bad Request, 401 Unauthorized
 
 - **GET /generations/{id}**
+
   - **Description:** Retrieve details of a specific AI generation session.
   - **URL Parameter:** `id` – generation UUID.
   - **Response:**
     ```json
     {
-      "id": "uuid",
-      "user_id": "uuid",
-      "model": "string",
-      "generated_count": 10,
-      "accepted_unedited_count": 5,
-      "accepted_edited_count": 2,
-      "source_text_hash": "string",
-      "source_text_length": 5000,
-      "generation_duration": 2500,
-      "created_at": "timestamp",
-      "updated_at": "timestamp"
+    	"id": "uuid",
+    	"user_id": "uuid",
+    	"model": "string",
+    	"generated_count": 10,
+    	"accepted_unedited_count": 5,
+    	"accepted_edited_count": 2,
+    	"source_text_hash": "string",
+    	"source_text_length": 5000,
+    	"generation_duration": 2500,
+    	"created_at": "timestamp",
+    	"updated_at": "timestamp"
     }
     ```
   - **Success:** 200 OK
@@ -191,14 +197,14 @@
   - **Response:**
     ```json
     {
-      "flashcards": [
-        {
-          "front": "string",
-          "back": "string",
-          "source": "ai",
-          "created_at": "timestamp"
-        }
-      ]
+    	"flashcards": [
+    		{
+    			"front": "string",
+    			"back": "string",
+    			"source": "ai",
+    			"created_at": "timestamp"
+    		}
+    	]
     }
     ```
   - **Success:** 200 OK
@@ -207,27 +213,28 @@
 ### 2.4 Generation Error Logs Endpoints
 
 - **GET /generation_error_logs**
+
   - **Description:** Retrieve a paginated list of AI generation error logs for the authenticated user.
   - **Query Parameters:** e.g., `page`, `per_page`
   - **Response:**
     ```json
     {
-      "error_logs": [
-        {
-          "id": "uuid",
-          "model": "string",
-          "source_text_hash": "string",
-          "error_code": "string",
-          "error_message": "string",
-          "created_at": "timestamp"
-        }
-      ],
-      "pagination": {
-        "page": 1,
-        "per_page": 10,
-        "total_pages": 2,
-        "total_items": 15
-      }
+    	"error_logs": [
+    		{
+    			"id": "uuid",
+    			"model": "string",
+    			"source_text_hash": "string",
+    			"error_code": "string",
+    			"error_message": "string",
+    			"created_at": "timestamp"
+    		}
+    	],
+    	"pagination": {
+    		"page": 1,
+    		"per_page": 10,
+    		"total_pages": 2,
+    		"total_items": 15
+    	}
     }
     ```
   - **Success:** 200 OK
@@ -239,12 +246,12 @@
   - **Response:**
     ```json
     {
-      "id": "uuid",
-      "model": "string",
-      "source_text_hash": "string",
-      "error_code": "string",
-      "error_message": "string",
-      "created_at": "timestamp"
+    	"id": "uuid",
+    	"model": "string",
+    	"source_text_hash": "string",
+    	"error_code": "string",
+    	"error_message": "string",
+    	"created_at": "timestamp"
     }
     ```
   - **Success:** 200 OK
@@ -259,6 +266,7 @@
 ## 4. Validation and Business Logic
 
 - **Input Validation:**
+
   - Use Zod schemas (or a similar library) to validate incoming JSON payloads on all endpoints.
   - For flashcards, ensure:
     - `front` does not exceed 200 characters.

@@ -2,7 +2,7 @@ import { SupabaseClient } from '@/db/supabase.client';
 import type {
 	CreateFlashcardCommandDto,
 	FlashcardDto,
-} from '@/types';
+} from '@/types/types';
 
 export class FlashcardsService {
 	constructor(private readonly supabase: SupabaseClient) {}

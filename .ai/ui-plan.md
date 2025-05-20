@@ -8,7 +8,7 @@ System frontend oparty na Next.js i wykorzystujący komponenty shadcn/ui oraz Ta
 
 - **Ekran Autoryzacji**
 
-  - Ścieżka: `/login`
+  - Ścieżka: `/login` i `/register`
   - Główny cel: Autentykacja użytkownika za pomocą formularza logowania.
   - Kluczowe informacje: Formularz logowania/rejestracji, komunikaty o błędach, instrukcje walidacji.
   - Kluczowe komponenty: Inputy, przycisk logowania, inline alerts, system powiadomień (toast notifications).
@@ -32,7 +32,7 @@ System frontend oparty na Next.js i wykorzystujący komponenty shadcn/ui oraz Ta
 
 - **Widok Recenzji Fiszek i Bulk Zapis**
 
-  - Ścieżka: `/review`
+  - Ścieżka: `/flashcards`
   - Główny cel: Recenzja propozycji fiszek (akceptacja, edycja, odrzucenie) oraz zbiorczy zapis zatwierdzonych fiszek.
   - Kluczowe informacje: Lista fiszek z opcjami akcji, status recenzji każdej fiszki, możliwość bulk zapisu.
   - Kluczowe komponenty: Tabela/lista fiszek, modale potwierdzające akcje, przyciski akcji, inline alerts oraz toast notifications.
@@ -58,7 +58,7 @@ System frontend oparty na Next.js i wykorzystujący komponenty shadcn/ui oraz Ta
 1. Użytkownik trafia na stronę `/login` i przeprowadza autentykację.
 2. Po pomyślnym logowaniu następuje przekierowanie do `/dashboard`, gdzie prezentowane są statystyki i powiadomienia.
 3. Użytkownik przechodzi do widoku `/generate`, by wprowadzić tekst źródłowy do generowania fiszek przez AI.
-4. Po zakończeniu procesu generowania, użytkownik trafia na widok `/review`, gdzie recenzuje i wybiera fiszki do zatwierdzenia.
+4. Po zakończeniu procesu generowania, użytkownik trafia na widok `/flashcards`, gdzie recenzuje i wybiera fiszki do zatwierdzenia.
 5. Zaakceptowane fiszki są zbiorczo zapisywane za pomocą opcji "Zapisz wszystkie".
 6. Użytkownik może przejść do panelu `/profile` w celu zarządzania kontem lub do `/review-sessions`, aby rozpocząć sesję powtórek.
 7. Na każdym etapie interfejs wspiera użytkownika poprzez inline alerts oraz toast notifications, informujące o sukcesach i błędach.

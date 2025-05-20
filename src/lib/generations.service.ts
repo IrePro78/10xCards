@@ -2,7 +2,7 @@ import { SupabaseClient } from '@/db/supabase.client';
 import {
 	GenerationWithCandidatesDto,
 	GenerationCandidateDto,
-} from '@/types';
+} from '@/types/types';
 import { createHash } from 'crypto';
 
 export class GenerationsService {

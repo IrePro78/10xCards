@@ -6,7 +6,7 @@ const config = {
 	useTabs: true,
 	endOfLine: 'lf',
 	plugins: ['prettier-plugin-tailwindcss'],
-	// tailwindConfig: './tailwind.config.ts',
+	tailwindConfig: './tailwind.config.ts',
 };
 
 export default config;

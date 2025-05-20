@@ -14,4 +14,4 @@ export const supabaseClient = createClient<Database>(
 	supabaseAnonKey,
 );
 
-export const DEFAULT_USER_ID = 'feed04f9-7dbc-4ed2-be9a-c518cf2ba5a5';
+export const DEFAULT_USER_ID = 'a29cd4c1-c2b3-4fc6-844a-1aca30bca8ae';

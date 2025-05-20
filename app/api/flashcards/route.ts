@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type {
 	CreateFlashcardsRequestDto,
 	CreateFlashcardsResponseDto,
-} from '@/types';
+} from '@/types/types';
 import {
 	DEFAULT_USER_ID,
 	supabaseClient,

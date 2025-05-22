@@ -103,7 +103,10 @@ export class GenerationsService {
 		return [
 			{ front: 'Przykładowa fiszka 1', back: 'Odpowiedź 1' },
 			{ front: 'Przykładowa fiszka 2', back: 'Odpowiedź 2' },
-			{ front: 'Przykładowa fiszka 3', back: 'Odpowiedź 3' },
+			{ front: 'Przykładowa fiszka 3', back: 'Odpowiedź 2' },
+			{ front: 'Przykładowa fiszka 4', back: 'Odpowiedź 2' },
+			{ front: 'Przykładowa fiszka 5', back: 'Odpowiedź 2' },
+			{ front: 'Przykładowa fiszka 6', back: 'Odpowiedź 3' },
 		];
 	}
 }

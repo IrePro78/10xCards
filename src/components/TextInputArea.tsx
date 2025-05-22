@@ -3,6 +3,7 @@
 import { ChangeEvent } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 
 interface TextInputAreaProps {
 	value: string;
@@ -16,20 +17,19 @@ export function TextInputArea({
 	disabled,
 }: TextInputAreaProps) {
 	const textLength = value.length;
-	const progressPercentage = Math.min(
-		(textLength / 10000) * 100,
-		100,
+	const progressPercentage = Math.round(
+		(Math.min(Math.max(textLength, 0), 10000) / 10000) * 100,
 	);
 
 	const getStatusClass = () => {
 		if (textLength === 0) return '';
-		if (textLength < 1000) return 'char-counter-min';
-		if (textLength > 10000) return 'char-counter-max';
-		return 'char-counter-optimal';
+		if (textLength < 1000) return 'text-red-500';
+		if (textLength > 10000) return 'text-red-500';
+		return 'text-gray-500';
 	};
 
 	return (
-		<div className="text-input-container">
+		<div className="relative mb-8">
 			<Label
 				htmlFor="source-text"
 				className="mb-2 block text-base font-medium"
@@ -45,23 +45,21 @@ export function TextInputArea({
 				}
 				disabled={disabled}
 				placeholder="Wprowadź tekst do wygenerowania fiszek (minimum 1000 znaków, maksimum 10000 znaków)"
-				className="text-input-area"
+				className="font-inherit min-h-[200px] w-full resize-y rounded-md border border-gray-300 bg-white p-3 text-sm leading-relaxed text-gray-900 shadow-sm transition-all focus:border-blue-300 focus:ring-2 focus:ring-blue-100 focus:outline-none"
 			/>
 
-			<div className="char-counter">
-				<div className="char-counter-progress">
-					<div
-						className="char-counter-bar"
-						style={{ width: `${progressPercentage}%` }}
-					></div>
-				</div>
-				<span className={getStatusClass()}>
-					{textLength < 1000
-						? `Min. ${textLength}/1000`
-						: textLength > 10000
-							? `Max. ${textLength}/10000`
-							: `${textLength}/10000`}
-				</span>
+			<div className="absolute right-0 -bottom-7 flex items-center gap-2 text-xs">
+				<Progress
+					value={progressPercentage}
+					className="h-2 w-[120px]"
+					data-state={
+						textLength > 10000 ||
+						(textLength > 0 && textLength < 1000)
+							? 'error'
+							: 'default'
+					}
+				/>
+				<span className={getStatusClass()}>{textLength}/10000</span>
 			</div>
 		</div>
 	);

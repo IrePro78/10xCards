@@ -1,24 +1,29 @@
 'use client';
 
+import { Skeleton } from '@/components/ui/skeleton';
+
 export function SkeletonLoader() {
 	return (
 		<div className="space-y-6">
 			{Array.from({ length: 3 }).map((_, index) => (
-				<div key={index} className="flashcard-item">
-					<div className="flashcard-content">
-						<div>
-							<div className="bg-muted-foreground/20 mb-2 h-4 w-[250px] animate-pulse rounded"></div>
-							<div className="flashcard-front bg-muted/80 h-12 animate-pulse"></div>
+				<div
+					key={index}
+					className="border-border bg-card text-card-foreground mb-4 overflow-hidden rounded-md border"
+				>
+					<div className="flex flex-col">
+						<div className="border-border border-b p-4">
+							<Skeleton className="mb-2 h-4 w-[250px]" />
+							<Skeleton className="h-12 w-full" />
 						</div>
-						<div>
-							<div className="bg-muted-foreground/20 mb-2 h-4 w-[250px] animate-pulse rounded"></div>
-							<div className="flashcard-back bg-muted/80 h-20 animate-pulse"></div>
+						<div className="border-border border-b p-4">
+							<Skeleton className="mb-2 h-4 w-[250px]" />
+							<Skeleton className="h-20 w-full" />
 						</div>
 					</div>
-					<div className="flashcard-actions">
-						<div className="bg-muted-foreground/20 h-9 w-20 animate-pulse rounded"></div>
-						<div className="bg-muted-foreground/20 h-9 w-20 animate-pulse rounded"></div>
-						<div className="bg-muted-foreground/20 h-9 w-20 animate-pulse rounded"></div>
+					<div className="bg-muted flex justify-end gap-2 p-3">
+						<Skeleton className="h-9 w-20" />
+						<Skeleton className="h-9 w-20" />
+						<Skeleton className="h-9 w-20" />
 					</div>
 				</div>
 			))}

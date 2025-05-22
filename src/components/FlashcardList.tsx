@@ -22,7 +22,7 @@ export function FlashcardList({
 	}
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-6">
 			<AnimatePresence mode="popLayout">
 				{flashcards.map((flashcard) => (
 					<motion.div
@@ -32,18 +32,29 @@ export function FlashcardList({
 						exit={{ opacity: 0, x: -100 }}
 						transition={{
 							type: 'spring',
-							stiffness: 500,
-							damping: 30,
+							stiffness: 400,
+							damping: 25,
 							mass: 1,
 						}}
 						layout
+						className="relative"
 					>
-						<FlashcardItem
-							flashcard={flashcard}
-							onAccept={onAccept}
-							onEdit={onEdit}
-							onReject={onReject}
-						/>
+						<motion.div
+							initial={{ scale: 0.95 }}
+							animate={{ scale: 1 }}
+							transition={{
+								type: 'spring',
+								stiffness: 300,
+								damping: 20,
+							}}
+						>
+							<FlashcardItem
+								flashcard={flashcard}
+								onAccept={onAccept}
+								onEdit={onEdit}
+								onReject={onReject}
+							/>
+						</motion.div>
 					</motion.div>
 				))}
 			</AnimatePresence>

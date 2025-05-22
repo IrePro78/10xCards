@@ -1,13 +1,21 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
+	darkMode: 'class',
 	content: [
-		'./src/**/*.{js,ts,jsx,tsx,mdx}',
-		'./src/components/**/*.{js,ts,jsx,tsx,mdx}',
-		'./src/components/ui/**/*.{js,ts,jsx,tsx,mdx}',
-		'./app/**/*.{js,ts,jsx,tsx,mdx}',
+		'./pages/**/*.{ts,tsx}',
+		'./components/**/*.{ts,tsx}',
+		'./app/**/*.{ts,tsx}',
+		'./src/**/*.{ts,tsx}',
 	],
 	theme: {
+		container: {
+			center: true,
+			padding: '2rem',
+			screens: {
+				'2xl': '1400px',
+			},
+		},
 		extend: {
 			colors: {
 				border: 'var(--border)',
@@ -43,11 +51,67 @@ const config: Config = {
 					DEFAULT: 'var(--card)',
 					foreground: 'var(--card-foreground)',
 				},
+				// Dodatkowe kolory specyficzne dla projektu
+				accept: {
+					DEFAULT: 'var(--accept-color)',
+					hover: 'var(--accept-color-hover)',
+				},
+				edit: {
+					DEFAULT: 'var(--edit-color)',
+					hover: 'var(--edit-color-hover)',
+				},
+				reject: {
+					DEFAULT: 'var(--reject-color)',
+					hover: 'var(--reject-color-hover)',
+				},
+				generate: {
+					DEFAULT: 'var(--generate-color)',
+					hover: 'var(--generate-color-hover)',
+				},
+				success: 'var(--success-color)',
+				error: 'var(--error-color)',
+				info: 'var(--info-color)',
+				warning: 'var(--warning-color)',
 			},
 			borderRadius: {
-				lg: 'var(--radius)',
-				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)',
+				lg: 'var(--radius-lg)',
+				md: 'var(--radius-md)',
+				sm: 'var(--radius-sm)',
+				xl: 'var(--radius-xl)',
+			},
+			boxShadow: {
+				card: 'var(--card-shadow)',
+				'card-hover': 'var(--card-shadow-hover)',
+				input: 'var(--input-shadow)',
+				button: 'var(--button-shadow)',
+				'button-hover': 'var(--button-shadow-hover)',
+				toast: 'var(--toast-shadow)',
+			},
+			fontSize: {
+				'card-title': '1.125rem',
+			},
+			fontWeight: {
+				'card-title': '600',
+			},
+			animation: {
+				'accordion-down': 'accordion-down 0.2s ease-out',
+				'accordion-up': 'accordion-up 0.2s ease-out',
+			},
+			keyframes: {
+				'accordion-down': {
+					from: { height: 0 },
+					to: { height: 'var(--radix-accordion-content-height)' },
+				},
+				'accordion-up': {
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: 0 },
+				},
+			},
+			spacing: {
+				'card-spacing': 'var(--card-spacing)',
+			},
+			transitionProperty: {
+				card: 'var(--card-transition)',
 			},
 		},
 	},

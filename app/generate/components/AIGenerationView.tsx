@@ -9,6 +9,7 @@ import { SkeletonLoader } from '@/components/SkeletonLoader';
 import { FlashcardList } from '@/components/FlashcardList';
 import { EditFlashcardDialog } from '@/components/EditFlashcardDialog';
 import { BulkSaveButton } from '@/components/BulkSaveButton';
+import { ProgressBar } from '@/components/ProgressBar';
 
 interface AIGenerationViewModel {
 	sourceText: string;
@@ -17,6 +18,9 @@ interface AIGenerationViewModel {
 	isLoading: boolean;
 	error: string | null;
 	generationId: string | null;
+	progress: number;
+	totalFlashcards: number;
+	currentFlashcard: number;
 }
 
 export function AIGenerationView() {
@@ -27,7 +31,12 @@ export function AIGenerationView() {
 		isLoading: false,
 		error: null,
 		generationId: null,
+		progress: 0,
+		totalFlashcards: 0,
+		currentFlashcard: 0,
 	});
+
+	const [showProgress, setShowProgress] = useState(false);
 
 	const [editingFlashcard, setEditingFlashcard] =
 		useState<GenerationCandidateDto | null>(null);
@@ -50,7 +59,11 @@ export function AIGenerationView() {
 				candidateFlashcards: [],
 				acceptedFlashcards: [],
 				generationId: null,
+				progress: 0,
+				totalFlashcards: 0,
+				currentFlashcard: 0,
 			}));
+			setShowProgress(true);
 
 			const response = await fetch('/api/generations', {
 				method: 'POST',
@@ -65,14 +78,39 @@ export function AIGenerationView() {
 			}
 
 			const data = await response.json();
+			const totalFlashcards = data.candidate_flashcards.length;
+
+			// Symulujemy stopniowe pojawianie się fiszek
+			for (let i = 0; i < totalFlashcards; i++) {
+				await new Promise((resolve) => setTimeout(resolve, 300)); // 300ms opóźnienia między fiszkami
+				setViewModel((prev) => ({
+					...prev,
+					candidateFlashcards: [
+						...prev.candidateFlashcards,
+						data.candidate_flashcards[i],
+					],
+					currentFlashcard: i + 1,
+					totalFlashcards,
+					progress: Math.round(((i + 1) / totalFlashcards) * 100),
+				}));
+			}
+
 			setViewModel((prev) => ({
 				...prev,
-				candidateFlashcards: data.candidate_flashcards,
 				generationId: data.id,
 				isLoading: false,
 			}));
 
-			toast.success('Pomyślnie wygenerowano fiszki');
+			// Czekamy na zakończenie ostatniej animacji przed pokazaniem komunikatu
+			await new Promise((resolve) => setTimeout(resolve, 500));
+
+			toast.success(
+				`Pomyślnie wygenerowano ${totalFlashcards} ${totalFlashcards === 1 ? 'fiszkę' : totalFlashcards < 5 ? 'fiszki' : 'fiszek'}`,
+			);
+
+			// Dajemy czas na zobaczenie 100% i dopiero potem ukrywamy
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+			setShowProgress(false);
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error
@@ -83,7 +121,11 @@ export function AIGenerationView() {
 				...prev,
 				error: errorMessage,
 				isLoading: false,
+				progress: 0,
+				totalFlashcards: 0,
+				currentFlashcard: 0,
 			}));
+			setShowProgress(false);
 		}
 	};
 
@@ -180,36 +222,53 @@ export function AIGenerationView() {
 
 	return (
 		<div className="space-y-6">
-			<TextInputArea
-				value={viewModel.sourceText}
-				onChange={handleTextChange}
-				disabled={viewModel.isLoading}
-			/>
-
-			{viewModel.error && (
-				<div className="rounded-md bg-red-100 p-4 text-red-700">
-					{viewModel.error}
-				</div>
-			)}
-
-			<div className="flex flex-col gap-4 sm:flex-row">
-				<GenerateButton
-					onClick={handleGenerate}
-					isLoading={viewModel.isLoading}
-					isDisabled={
-						viewModel.sourceText.length < 1000 ||
-						viewModel.sourceText.length > 10000
-					}
-				/>
-
-				{viewModel.generationId && (
-					<BulkSaveButton
-						flashcards={viewModel.acceptedFlashcards}
-						generationId={viewModel.generationId}
-						onSave={handleBulkSave}
-						isLoading={isSaving}
+			<div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+				<div className="p-6">
+					<TextInputArea
+						value={viewModel.sourceText}
+						onChange={handleTextChange}
+						disabled={viewModel.isLoading}
 					/>
-				)}
+
+					{viewModel.error && (
+						<div className="bg-destructive/10 text-destructive mt-4 rounded-md p-4">
+							{viewModel.error}
+						</div>
+					)}
+
+					<div className="mt-4 min-h-[40px]">
+						<ProgressBar
+							progress={viewModel.progress}
+							currentFlashcard={viewModel.currentFlashcard}
+							totalFlashcards={viewModel.totalFlashcards}
+							isVisible={showProgress}
+						/>
+					</div>
+
+					<div className="flex flex-col gap-4 sm:flex-row">
+						<GenerateButton
+							onClick={handleGenerate}
+							isLoading={viewModel.isLoading}
+							isDisabled={
+								viewModel.sourceText.length < 1000 ||
+								viewModel.sourceText.length > 10000
+							}
+						/>
+
+						{viewModel.generationId &&
+							viewModel.acceptedFlashcards.length > 0 && (
+								<BulkSaveButton
+									flashcards={viewModel.acceptedFlashcards}
+									generationId={viewModel.generationId}
+									onSave={handleBulkSave}
+									isLoading={isSaving}
+									flashcardsCount={
+										viewModel.acceptedFlashcards.length
+									}
+								/>
+							)}
+					</div>
+				</div>
 			</div>
 
 			{viewModel.isLoading ? (
@@ -217,30 +276,38 @@ export function AIGenerationView() {
 			) : (
 				<>
 					{viewModel.candidateFlashcards.length > 0 && (
-						<div className="space-y-2">
-							<h2 className="text-lg font-semibold">
-								Kandydaci na fiszki
-							</h2>
-							<FlashcardList
-								flashcards={viewModel.candidateFlashcards}
-								onAccept={handleAcceptFlashcard}
-								onEdit={handleEditFlashcard}
-								onReject={handleRejectFlashcard}
-							/>
+						<div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+							<div className="border-b border-gray-100 px-6 py-4">
+								<h2 className="text-lg font-medium text-gray-700">
+									Kandydaci na fiszki
+								</h2>
+							</div>
+							<div className="p-6">
+								<FlashcardList
+									flashcards={viewModel.candidateFlashcards}
+									onAccept={handleAcceptFlashcard}
+									onEdit={handleEditFlashcard}
+									onReject={handleRejectFlashcard}
+								/>
+							</div>
 						</div>
 					)}
 
 					{viewModel.acceptedFlashcards.length > 0 && (
-						<div className="space-y-2">
-							<h2 className="text-lg font-semibold">
-								Zaakceptowane fiszki
-							</h2>
-							<FlashcardList
-								flashcards={viewModel.acceptedFlashcards}
-								onAccept={handleAcceptFlashcard}
-								onEdit={handleEditFlashcard}
-								onReject={handleRejectFlashcard}
-							/>
+						<div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+							<div className="border-b border-gray-100 px-6 py-4">
+								<h2 className="text-lg font-medium text-gray-700">
+									Zaakceptowane fiszki
+								</h2>
+							</div>
+							<div className="p-6">
+								<FlashcardList
+									flashcards={viewModel.acceptedFlashcards}
+									onAccept={handleAcceptFlashcard}
+									onEdit={handleEditFlashcard}
+									onReject={handleRejectFlashcard}
+								/>
+							</div>
 						</div>
 					)}
 				</>

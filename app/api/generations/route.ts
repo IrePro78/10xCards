@@ -5,7 +5,6 @@ import {
 	supabaseClient,
 } from '@/db/supabase.client';
 import { GenerationsService } from '@/lib/generations.service';
-import { log } from 'console';
 
 // Schemat walidacji dla żądania tworzenia generacji
 const createGenerationSchema = z.object({

@@ -51,27 +51,7 @@ const config: Config = {
 					DEFAULT: 'var(--card)',
 					foreground: 'var(--card-foreground)',
 				},
-				// Dodatkowe kolory specyficzne dla projektu
-				accept: {
-					DEFAULT: 'var(--accept-color)',
-					hover: 'var(--accept-color-hover)',
-				},
-				edit: {
-					DEFAULT: 'var(--edit-color)',
-					hover: 'var(--edit-color-hover)',
-				},
-				reject: {
-					DEFAULT: 'var(--reject-color)',
-					hover: 'var(--reject-color-hover)',
-				},
-				generate: {
-					DEFAULT: 'var(--generate-color)',
-					hover: 'var(--generate-color-hover)',
-				},
-				success: 'var(--success-color)',
-				error: 'var(--error-color)',
-				info: 'var(--info-color)',
-				warning: 'var(--warning-color)',
+				error: 'var(--destructive)',
 			},
 			borderRadius: {
 				lg: 'var(--radius-lg)',

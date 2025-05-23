@@ -1,6 +1,5 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
 import type { GenerationCandidateDto } from '@/types/types';
 import { FlashcardItem } from './FlashcardItem';
 
@@ -9,6 +8,7 @@ interface FlashcardListProps {
 	onAccept: (flashcard: GenerationCandidateDto) => void;
 	onEdit: (flashcard: GenerationCandidateDto) => void;
 	onReject: (flashcard: GenerationCandidateDto) => void;
+	isAccepted?: boolean;
 }
 
 export function FlashcardList({
@@ -16,48 +16,28 @@ export function FlashcardList({
 	onAccept,
 	onEdit,
 	onReject,
+	isAccepted = false,
 }: FlashcardListProps) {
-	if (flashcards.length === 0) {
-		return null;
+	if (!flashcards.length) {
+		return (
+			<div className="text-muted-foreground py-8 text-center">
+				Brak fiszek do wyświetlenia
+			</div>
+		);
 	}
 
 	return (
-		<div className="space-y-6">
-			<AnimatePresence mode="popLayout">
-				{flashcards.map((flashcard) => (
-					<motion.div
-						key={`${flashcard.front.slice(0, 20)}-${flashcard.back.slice(0, 20)}-${Date.now()}`}
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, x: -100 }}
-						transition={{
-							type: 'spring',
-							stiffness: 400,
-							damping: 25,
-							mass: 1,
-						}}
-						layout
-						className="relative"
-					>
-						<motion.div
-							initial={{ scale: 0.95 }}
-							animate={{ scale: 1 }}
-							transition={{
-								type: 'spring',
-								stiffness: 300,
-								damping: 20,
-							}}
-						>
-							<FlashcardItem
-								flashcard={flashcard}
-								onAccept={onAccept}
-								onEdit={onEdit}
-								onReject={onReject}
-							/>
-						</motion.div>
-					</motion.div>
-				))}
-			</AnimatePresence>
+		<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+			{flashcards.map((flashcard, index) => (
+				<FlashcardItem
+					key={`flashcard-${index}-${flashcard.front.substring(0, 10)}`}
+					flashcard={flashcard}
+					onAccept={onAccept}
+					onEdit={onEdit}
+					onReject={onReject}
+					isAccepted={isAccepted}
+				/>
+			))}
 		</div>
 	);
 }

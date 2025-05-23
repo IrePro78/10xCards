@@ -8,6 +8,7 @@ import { GenerateButton } from '@/components/GenerateButton';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
 import { FlashcardList } from '@/components/FlashcardList';
 import { EditFlashcardDialog } from '@/components/EditFlashcardDialog';
+import { DeleteFlashcardDialog } from '@/components/DeleteFlashcardDialog';
 import { BulkSaveButton } from '@/components/BulkSaveButton';
 import { ProgressBar } from '@/components/ProgressBar';
 
@@ -40,6 +41,8 @@ export function AIGenerationView() {
 
 	const [editingFlashcard, setEditingFlashcard] =
 		useState<GenerationCandidateDto | null>(null);
+	const [deletingFlashcard, setDeletingFlashcard] =
+		useState<GenerationCandidateDto | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
 	const handleTextChange = (text: string) => {
@@ -56,9 +59,6 @@ export function AIGenerationView() {
 				...prev,
 				isLoading: true,
 				error: null,
-				candidateFlashcards: [],
-				acceptedFlashcards: [],
-				generationId: null,
 				progress: 0,
 				totalFlashcards: 0,
 				currentFlashcard: 0,
@@ -80,37 +80,81 @@ export function AIGenerationView() {
 			const data = await response.json();
 			const totalFlashcards = data.candidate_flashcards.length;
 
-			// Symulujemy stopniowe pojawianie się fiszek
-			for (let i = 0; i < totalFlashcards; i++) {
-				await new Promise((resolve) => setTimeout(resolve, 300)); // 300ms opóźnienia między fiszkami
-				setViewModel((prev) => ({
-					...prev,
-					candidateFlashcards: [
-						...prev.candidateFlashcards,
-						data.candidate_flashcards[i],
-					],
-					currentFlashcard: i + 1,
-					totalFlashcards,
-					progress: Math.round(((i + 1) / totalFlashcards) * 100),
-				}));
-			}
-
+			// Ustawiamy od razu liczbę całkowitą fiszek
 			setViewModel((prev) => ({
 				...prev,
+				totalFlashcards,
 				generationId: data.id,
-				isLoading: false,
 			}));
 
-			// Czekamy na zakończenie ostatniej animacji przed pokazaniem komunikatu
-			await new Promise((resolve) => setTimeout(resolve, 500));
+			// Symulujemy stopniowe pojawianie się fiszek
+			const addFlashcardsWithAnimation = async () => {
+				// Przygotowujemy nowe fiszki do dodania
+				const newFlashcards = data.candidate_flashcards;
 
-			toast.success(
-				`Pomyślnie wygenerowano ${totalFlashcards} ${totalFlashcards === 1 ? 'fiszkę' : totalFlashcards < 5 ? 'fiszki' : 'fiszek'}`,
-			);
+				// Całkowity czas animacji
+				const totalAnimationTime = 5000; // 5 sekund na całą animację
 
-			// Dajemy czas na zobaczenie 100% i dopiero potem ukrywamy
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			setShowProgress(false);
+				// Obliczamy dokładnie, przy jakich wartościach procentowych mają pojawiać się fiszki
+				// Każda fiszka dostaje równą część paska postępu
+				const flashcardsThresholds = [];
+				for (let i = 0; i < totalFlashcards; i++) {
+					// Równomiernie rozkładamy fiszki między 10% a 90% paska
+					// Pierwsza fiszka przy 10%, ostatnia przy 90%
+					const threshold = Math.round(
+						10 + (i * 80) / (totalFlashcards - 1),
+					);
+					flashcardsThresholds.push(threshold);
+				}
+
+				// Czas na 1% postępu
+				const incrementTime = totalAnimationTime / 100;
+
+				// Animujemy postęp i stopniowo dodajemy fiszki
+				for (let percent = 1; percent <= 100; percent++) {
+					await new Promise((resolve) =>
+						setTimeout(resolve, incrementTime),
+					);
+
+					// Sprawdzamy, ile fiszek powinno być widocznych przy obecnym procencie
+					const newFlashcardsCount = flashcardsThresholds.filter(
+						(threshold) => percent >= threshold,
+					).length;
+
+					setViewModel((prev) => ({
+						...prev,
+						candidateFlashcards: [
+							...prev.candidateFlashcards,
+							...newFlashcards.slice(
+								prev.candidateFlashcards.length,
+								newFlashcardsCount,
+							),
+						],
+						currentFlashcard: newFlashcardsCount,
+						progress: percent,
+					}));
+				}
+
+				// Po zakończeniu animacji
+				setViewModel((prev) => ({
+					...prev,
+					isLoading: false,
+				}));
+
+				// Czekamy na zakończenie ostatniej animacji przed pokazaniem komunikatu
+				await new Promise((resolve) => setTimeout(resolve, 500));
+
+				toast.success(
+					`Pomyślnie wygenerowano ${totalFlashcards} ${totalFlashcards === 1 ? 'fiszkę' : totalFlashcards < 5 ? 'fiszki' : 'fiszek'}`,
+				);
+
+				// Dajemy czas na zobaczenie 100% i dopiero potem ukrywamy
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+				setShowProgress(false);
+			};
+
+			// Uruchamiamy animację
+			await addFlashcardsWithAnimation();
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error
@@ -132,6 +176,11 @@ export function AIGenerationView() {
 	const handleAcceptFlashcard = (
 		flashcard: GenerationCandidateDto,
 	) => {
+		// Sprawdzamy czy fiszka nie jest już na liście zaakceptowanych
+		if (viewModel.acceptedFlashcards.some((f) => f === flashcard)) {
+			return;
+		}
+
 		setViewModel((prev) => ({
 			...prev,
 			candidateFlashcards: prev.candidateFlashcards.filter(
@@ -163,6 +212,22 @@ export function AIGenerationView() {
 	const handleRejectFlashcard = (
 		flashcard: GenerationCandidateDto,
 	) => {
+		// Jeśli fiszka jest w liście zaakceptowanych, przenosimy ją z powrotem do kandydatów
+		if (viewModel.acceptedFlashcards.some((f) => f === flashcard)) {
+			setViewModel((prev) => ({
+				...prev,
+				candidateFlashcards: [...prev.candidateFlashcards, flashcard],
+				acceptedFlashcards: prev.acceptedFlashcards.filter(
+					(f) => f !== flashcard,
+				),
+			}));
+		} else {
+			// Jeśli fiszka jest w liście kandydatów, pokazujemy modal potwierdzenia
+			setDeletingFlashcard(flashcard);
+		}
+	};
+
+	const handleConfirmDelete = (flashcard: GenerationCandidateDto) => {
 		setViewModel((prev) => ({
 			...prev,
 			candidateFlashcards: prev.candidateFlashcards.filter(
@@ -187,6 +252,7 @@ export function AIGenerationView() {
 						(flashcard) => ({
 							front: flashcard.front,
 							back: flashcard.back,
+							source: 'manual',
 							generation_id: viewModel.generationId,
 						}),
 					),
@@ -203,10 +269,7 @@ export function AIGenerationView() {
 
 			setViewModel((prev) => ({
 				...prev,
-				candidateFlashcards: [],
 				acceptedFlashcards: [],
-				sourceText: '',
-				generationId: null,
 			}));
 		} catch (error) {
 			const errorMessage =
@@ -222,7 +285,12 @@ export function AIGenerationView() {
 
 	return (
 		<div className="space-y-6">
-			<div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+			<div className="border-border bg-card text-card-foreground rounded-lg border shadow-sm">
+				<div className="border-border border-b px-6 py-4">
+					<h2 className="text-lg font-medium">
+						Wprowadź tekst do analizy
+					</h2>
+				</div>
 				<div className="p-6">
 					<TextInputArea
 						value={viewModel.sourceText}
@@ -245,7 +313,7 @@ export function AIGenerationView() {
 						/>
 					</div>
 
-					<div className="flex flex-col gap-4 sm:flex-row">
+					<div className="mt-6 flex flex-col gap-4 sm:flex-row">
 						<GenerateButton
 							onClick={handleGenerate}
 							isLoading={viewModel.isLoading}
@@ -271,53 +339,78 @@ export function AIGenerationView() {
 				</div>
 			</div>
 
-			{viewModel.isLoading ? (
-				<SkeletonLoader />
-			) : (
-				<>
-					{viewModel.candidateFlashcards.length > 0 && (
-						<div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-							<div className="border-b border-gray-100 px-6 py-4">
-								<h2 className="text-lg font-medium text-gray-700">
-									Kandydaci na fiszki
-								</h2>
-							</div>
-							<div className="p-6">
-								<FlashcardList
-									flashcards={viewModel.candidateFlashcards}
-									onAccept={handleAcceptFlashcard}
-									onEdit={handleEditFlashcard}
-									onReject={handleRejectFlashcard}
-								/>
-							</div>
-						</div>
-					)}
-
-					{viewModel.acceptedFlashcards.length > 0 && (
-						<div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-							<div className="border-b border-gray-100 px-6 py-4">
-								<h2 className="text-lg font-medium text-gray-700">
-									Zaakceptowane fiszki
-								</h2>
-							</div>
-							<div className="p-6">
-								<FlashcardList
-									flashcards={viewModel.acceptedFlashcards}
-									onAccept={handleAcceptFlashcard}
-									onEdit={handleEditFlashcard}
-									onReject={handleRejectFlashcard}
-								/>
-							</div>
-						</div>
-					)}
-				</>
+			{viewModel.isLoading && (
+				<div className="border-border bg-card text-card-foreground rounded-lg border shadow-sm">
+					<div className="border-border border-b px-6 py-4">
+						<h2 className="text-lg font-medium">
+							Generowanie fiszek
+						</h2>
+					</div>
+					<div className="p-6">
+						<SkeletonLoader />
+					</div>
+				</div>
 			)}
+
+			{!viewModel.isLoading &&
+				viewModel.candidateFlashcards.length > 0 && (
+					<div className="border-border bg-card text-card-foreground rounded-lg border shadow-sm">
+						<div className="border-border border-b px-6 py-4">
+							<h2 className="text-lg font-medium">
+								Kandydaci na fiszki
+							</h2>
+							<p className="text-muted-foreground mt-1 text-sm">
+								Wybierz fiszki, które chcesz zachować
+							</p>
+						</div>
+						<div className="p-6">
+							<FlashcardList
+								flashcards={viewModel.candidateFlashcards}
+								onAccept={handleAcceptFlashcard}
+								onEdit={handleEditFlashcard}
+								onReject={handleRejectFlashcard}
+								isAccepted={false}
+							/>
+						</div>
+					</div>
+				)}
+
+			{!viewModel.isLoading &&
+				viewModel.acceptedFlashcards.length > 0 && (
+					<div className="border-border bg-card text-card-foreground rounded-lg border shadow-sm">
+						<div className="border-border border-b px-6 py-4">
+							<h2 className="text-lg font-medium">
+								Zaakceptowane fiszki
+							</h2>
+							<p className="text-muted-foreground mt-1 text-sm">
+								Lista zaakceptowanych fiszek. Kliknij przycisk powrotu
+								aby przenieść fiszkę z powrotem do kandydatów.
+							</p>
+						</div>
+						<div className="p-6">
+							<FlashcardList
+								flashcards={viewModel.acceptedFlashcards}
+								onAccept={handleAcceptFlashcard}
+								onEdit={handleEditFlashcard}
+								onReject={handleRejectFlashcard}
+								isAccepted={true}
+							/>
+						</div>
+					</div>
+				)}
 
 			<EditFlashcardDialog
 				flashcard={editingFlashcard}
 				isOpen={editingFlashcard !== null}
 				onClose={() => setEditingFlashcard(null)}
 				onSave={handleSaveEdit}
+			/>
+
+			<DeleteFlashcardDialog
+				flashcard={deletingFlashcard}
+				isOpen={deletingFlashcard !== null}
+				onClose={() => setDeletingFlashcard(null)}
+				onConfirm={handleConfirmDelete}
 			/>
 		</div>
 	);

@@ -1,9 +1,8 @@
 'use client';
 
-import { ChangeEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Progress } from '@/components/ui/progress';
 
 interface TextInputAreaProps {
 	value: string;
@@ -14,53 +13,61 @@ interface TextInputAreaProps {
 export function TextInputArea({
 	value,
 	onChange,
-	disabled,
+	disabled = false,
 }: TextInputAreaProps) {
-	const textLength = value.length;
-	const progressPercentage = Math.round(
-		(Math.min(Math.max(textLength, 0), 10000) / 10000) * 100,
-	);
+	const [charCount, setCharCount] = useState(value.length);
+	const MAX_CHARS = 10000;
 
-	const getStatusClass = () => {
-		if (textLength === 0) return '';
-		if (textLength < 1000) return 'text-red-500';
-		if (textLength > 10000) return 'text-red-500';
-		return 'text-gray-500';
+	const handleChange = (
+		e: React.ChangeEvent<HTMLTextAreaElement>,
+	) => {
+		const newValue = e.target.value;
+		onChange(newValue);
+		setCharCount(newValue.length);
+	};
+
+	// Aktualizuj licznik znaków, gdy zmienia się wartość z zewnątrz
+	useEffect(() => {
+		setCharCount(value.length);
+	}, [value]);
+
+	const getStatusColor = () => {
+		if (charCount < 1000) {
+			return 'text-destructive';
+		}
+		if (charCount > MAX_CHARS) {
+			return 'text-destructive';
+		}
+		return 'text-muted-foreground';
 	};
 
 	return (
-		<div className="relative mb-8">
-			<Label
-				htmlFor="source-text"
-				className="mb-2 block text-base font-medium"
-			>
-				Tekst źródłowy
-			</Label>
-
+		<div className="space-y-2">
+			<div className="flex justify-between">
+				<Label htmlFor="source-text" className="text-sm font-medium">
+					Tekst źródłowy
+				</Label>
+				<span
+					className={`text-xs ${getStatusColor()}`}
+					data-testid="char-count"
+				>
+					{charCount}/{MAX_CHARS} znaków{' '}
+					{charCount < 1000
+						? '(minimum 1000)'
+						: charCount > MAX_CHARS
+							? '(przekroczono limit)'
+							: ''}
+				</span>
+			</div>
 			<Textarea
 				id="source-text"
 				value={value}
-				onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-					onChange(e.target.value)
-				}
+				onChange={handleChange}
 				disabled={disabled}
-				placeholder="Wprowadź tekst do wygenerowania fiszek (minimum 1000 znaków, maksimum 10000 znaków)"
-				className="font-inherit min-h-[200px] w-full resize-y rounded-md border border-gray-300 bg-white p-3 text-sm leading-relaxed text-gray-900 shadow-sm transition-all focus:border-blue-300 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+				placeholder="Wklej tutaj tekst, z którego chcesz wygenerować fiszki (minimum 1000, maksimum 10000 znaków)..."
+				className="h-[200px] resize-none"
+				data-testid="source-text-input"
 			/>
-
-			<div className="absolute right-0 -bottom-7 flex items-center gap-2 text-xs">
-				<Progress
-					value={progressPercentage}
-					className="h-2 w-[120px]"
-					data-state={
-						textLength > 10000 ||
-						(textLength > 0 && textLength < 1000)
-							? 'error'
-							: 'default'
-					}
-				/>
-				<span className={getStatusClass()}>{textLength}/10000</span>
-			</div>
 		</div>
 	);
 }

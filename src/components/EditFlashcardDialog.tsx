@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
 	Dialog,
 	DialogContent,
@@ -8,6 +8,7 @@ import {
 	DialogTitle,
 	DialogFooter,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import type { GenerationCandidateDto } from '@/types/types';
@@ -19,156 +20,128 @@ interface EditFlashcardDialogProps {
 	onSave: (flashcard: GenerationCandidateDto) => void;
 }
 
-interface ValidationErrors {
-	front?: string;
-	back?: string;
-}
-
 export function EditFlashcardDialog({
 	flashcard,
 	isOpen,
 	onClose,
 	onSave,
 }: EditFlashcardDialogProps) {
-	const [editedFlashcard, setEditedFlashcard] =
-		useState<GenerationCandidateDto | null>(flashcard);
-	const [errors, setErrors] = useState<ValidationErrors>({});
+	const [front, setFront] = useState('');
+	const [back, setBack] = useState('');
+	const [frontError, setFrontError] = useState<string | null>(null);
+	const [backError, setBackError] = useState<string | null>(null);
 
-	// Reset form when flashcard changes
-	if (flashcard !== editedFlashcard) {
-		setEditedFlashcard(flashcard);
-		setErrors({});
-	}
+	useEffect(() => {
+		if (flashcard) {
+			setFront(flashcard.front);
+			setBack(flashcard.back);
+		}
+	}, [flashcard]);
 
-	if (!editedFlashcard) return null;
+	const validateFields = () => {
+		let isValid = true;
 
-	const validate = (): boolean => {
-		const newErrors: ValidationErrors = {};
-
-		if (editedFlashcard.front.length > 200) {
-			newErrors.front =
-				'Przód fiszki nie może być dłuższy niż 200 znaków';
+		if (!front.trim()) {
+			setFrontError('Przód fiszki nie może być pusty');
+			isValid = false;
+		} else {
+			setFrontError(null);
 		}
 
-		if (editedFlashcard.back.length > 500) {
-			newErrors.back =
-				'Tył fiszki nie może być dłuższy niż 500 znaków';
+		if (!back.trim()) {
+			setBackError('Tył fiszki nie może być pusty');
+			isValid = false;
+		} else {
+			setBackError(null);
 		}
 
-		if (editedFlashcard.front.trim().length === 0) {
-			newErrors.front = 'Przód fiszki nie może być pusty';
-		}
-
-		if (editedFlashcard.back.trim().length === 0) {
-			newErrors.back = 'Tył fiszki nie może być pusty';
-		}
-
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
+		return isValid;
 	};
 
 	const handleSave = () => {
-		if (validate()) {
-			onSave(editedFlashcard);
+		if (validateFields() && flashcard) {
+			onSave({
+				...flashcard,
+				front: front.trim(),
+				back: back.trim(),
+			});
 			onClose();
 		}
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="rounded-lg border border-gray-200 bg-white p-0 shadow-lg sm:max-w-[500px]">
-				<DialogHeader className="border-b border-gray-100 px-6 py-4">
-					<DialogTitle className="text-lg font-medium text-gray-700">
-						Edycja fiszki
-					</DialogTitle>
-				</DialogHeader>
+		<>
+			{isOpen && (
+				<div
+					className="fixed inset-0 bg-black/5 backdrop-blur-[2px]"
+					aria-hidden="true"
+				/>
+			)}
+			<Dialog
+				open={isOpen}
+				onOpenChange={(open) => !open && onClose()}
+			>
+				<DialogContent className="fixed top-[50%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] flex-col gap-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:max-w-xl">
+					<DialogHeader>
+						<DialogTitle className="text-xl font-semibold text-gray-900">
+							Edytuj fiszkę
+						</DialogTitle>
+					</DialogHeader>
 
-				<div className="space-y-6 p-6">
-					<div className="space-y-2">
-						<Label
-							htmlFor="front"
-							className="text-sm font-medium text-gray-600"
-						>
-							Przód fiszki
-						</Label>
-						<Textarea
-							id="front"
-							value={editedFlashcard.front}
-							onChange={(e) =>
-								setEditedFlashcard({
-									...editedFlashcard,
-									front: e.target.value,
-								})
-							}
-							className={`font-inherit min-h-[100px] w-full resize-y rounded-md border p-3 text-sm leading-relaxed text-gray-900 shadow-sm transition-all focus:outline-none ${
-								errors.front
-									? 'border-red-300 bg-red-50 focus:border-red-400 focus:ring-2 focus:ring-red-100'
-									: 'border-gray-300 bg-white focus:border-blue-300 focus:ring-2 focus:ring-blue-100'
-							}`}
-						/>
-						{errors.front && (
-							<p className="text-sm text-red-500">{errors.front}</p>
-						)}
-						<p
-							className={`text-xs ${editedFlashcard.front.length > 200 ? 'text-red-500' : 'text-gray-500'}`}
-						>
-							{editedFlashcard.front.length}/200 znaków
-						</p>
+					<div className="space-y-4">
+						<div className="space-y-2">
+							<Label
+								htmlFor="front"
+								className="text-xl font-semibold text-gray-900"
+							>
+								Przód fiszki
+							</Label>
+							<Textarea
+								id="front"
+								value={front}
+								onChange={(e) => setFront(e.target.value)}
+								maxLength={200}
+								className={`min-h-[80px] resize-y rounded-xl border border-gray-200 bg-white p-4 ${frontError ? 'border-red-600 focus-visible:ring-red-600' : ''}`}
+							/>
+							{frontError && (
+								<p className="text-sm font-medium text-red-600">
+									{frontError}
+								</p>
+							)}
+						</div>
+
+						<div className="space-y-2">
+							<Label
+								htmlFor="back"
+								className="text-xl font-semibold text-gray-900"
+							>
+								Tył fiszki
+							</Label>
+							<Textarea
+								id="back"
+								value={back}
+								onChange={(e) => setBack(e.target.value)}
+								maxLength={500}
+								className={`min-h-[160px] resize-y rounded-xl border border-gray-200 bg-white p-4 ${backError ? 'border-red-600 focus-visible:ring-red-600' : ''}`}
+							/>
+							{backError && (
+								<p className="text-sm font-medium text-red-600">
+									{backError}
+								</p>
+							)}
+						</div>
 					</div>
 
-					<div className="space-y-2">
-						<Label
-							htmlFor="back"
-							className="text-sm font-medium text-gray-600"
-						>
-							Tył fiszki
-						</Label>
-						<Textarea
-							id="back"
-							value={editedFlashcard.back}
-							onChange={(e) =>
-								setEditedFlashcard({
-									...editedFlashcard,
-									back: e.target.value,
-								})
-							}
-							className={`font-inherit min-h-[100px] w-full resize-y rounded-md border p-3 text-sm leading-relaxed text-gray-900 shadow-sm transition-all focus:outline-none ${
-								errors.back
-									? 'border-red-300 bg-red-50 focus:border-red-400 focus:ring-2 focus:ring-red-100'
-									: 'border-gray-300 bg-white focus:border-blue-300 focus:ring-2 focus:ring-blue-100'
-							}`}
-						/>
-						{errors.back && (
-							<p className="text-sm text-red-500">{errors.back}</p>
-						)}
-						<p
-							className={`text-xs ${editedFlashcard.back.length > 500 ? 'text-red-500' : 'text-gray-500'}`}
-						>
-							{editedFlashcard.back.length}/500 znaków
-						</p>
-					</div>
-				</div>
-
-				<DialogFooter className="border-t border-gray-100 bg-gray-50/50 px-6 py-4">
-					<div className="flex gap-3">
-						<button
-							onClick={onClose}
-							className="inline-flex transform items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-75 hover:border-gray-400 hover:bg-gray-50 active:translate-y-0.5 active:scale-95 active:bg-gray-100"
-							type="button"
-						>
+					<DialogFooter className="flex justify-end gap-2 border-t border-gray-200 pt-6">
+						<Button onClick={onClose} variant="outline-destructive">
 							Anuluj
-						</button>
-						<button
-							onClick={handleSave}
-							className="inline-flex transform items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-75 hover:border-blue-200 hover:bg-blue-50 active:translate-y-0.5 active:scale-95 active:bg-blue-100"
-							type="button"
-						>
-							<span className="text-blue-400">✓</span>
-							<span className="ml-1.5">Zapisz zmiany</span>
-						</button>
-					</div>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+						</Button>
+						<Button onClick={handleSave} variant="outline-info">
+							Zapisz zmiany
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }

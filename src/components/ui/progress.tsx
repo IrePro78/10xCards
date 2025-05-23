@@ -5,47 +5,24 @@ import * as ProgressPrimitive from '@radix-ui/react-progress';
 
 import { cn } from '@/lib/utils';
 
-interface ProgressProps
-	extends React.ComponentProps<typeof ProgressPrimitive.Root> {
-	'data-state'?: 'error' | 'default';
-}
-
-function Progress({
-	className,
-	value = 0,
-	'data-state': state,
-	...props
-}: ProgressProps) {
-	const isError = state === 'error';
-	const normalizedValue = Math.max(
-		0,
-		Math.min(100, Math.round(value || 0)),
-	);
-
-	console.log('Progress value:', value);
-	console.log('Normalized value:', normalizedValue);
-
-	return (
-		<ProgressPrimitive.Root
-			data-slot="progress"
-			data-state={state}
-			className={cn(
-				'relative h-2 w-full overflow-hidden rounded-full bg-gray-100',
-				className,
-			)}
-			{...props}
-		>
-			<ProgressPrimitive.Indicator
-				className={cn(
-					'h-full w-full flex-1 transition-all',
-					isError ? 'bg-red-400' : 'bg-blue-400',
-				)}
-				style={{
-					transform: `translateX(-${100 - normalizedValue}%)`,
-				}}
-			/>
-		</ProgressPrimitive.Root>
-	);
-}
+const Progress = React.forwardRef<
+	React.ElementRef<typeof ProgressPrimitive.Root>,
+	React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
+>(({ className, value, ...props }, ref) => (
+	<ProgressPrimitive.Root
+		ref={ref}
+		className={cn(
+			'relative h-2 w-full overflow-hidden rounded-full bg-transparent',
+			className,
+		)}
+		{...props}
+	>
+		<ProgressPrimitive.Indicator
+			className="h-full w-full flex-1 rounded-full bg-blue-500 transition-all dark:bg-blue-400"
+			style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+		/>
+	</ProgressPrimitive.Root>
+));
+Progress.displayName = ProgressPrimitive.Root.displayName;
 
 export { Progress };

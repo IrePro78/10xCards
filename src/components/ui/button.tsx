@@ -20,6 +20,25 @@ const buttonVariants = cva(
 				ghost:
 					'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
 				link: 'text-primary underline-offset-4 hover:underline',
+				success:
+					'bg-green-600 text-white shadow-xs hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600',
+				info: 'bg-blue-600 text-white shadow-xs hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600',
+				warning:
+					'bg-amber-500 text-white shadow-xs hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-600',
+				neutral:
+					'bg-gray-600 text-white shadow-xs hover:bg-gray-700 dark:bg-gray-500 dark:hover:bg-gray-600',
+				'outline-success':
+					'border-[1.5px] border-green-600 text-green-600 font-medium bg-transparent hover:bg-green-50 dark:border-green-500 dark:text-green-500 dark:hover:bg-green-950/20',
+				'outline-info':
+					'border-[1.5px] border-blue-600 text-blue-600 font-medium bg-transparent hover:bg-blue-50 dark:border-blue-500 dark:text-blue-500 dark:hover:bg-blue-950/20',
+				'outline-warning':
+					'border-[1.5px] border-amber-500 text-amber-500 font-medium bg-transparent hover:bg-amber-50 dark:border-amber-500 dark:text-amber-500 dark:hover:bg-amber-950/20',
+				'outline-neutral':
+					'border-[1.5px] border-gray-600 text-gray-600 font-medium bg-transparent hover:bg-gray-50 dark:border-gray-400 dark:text-gray-400 dark:hover:bg-gray-950/20',
+				'outline-destructive':
+					'border-[1.5px] border-red-600 text-red-600 font-medium bg-transparent hover:bg-red-50 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-950/20',
+				'outline-primary':
+					'border-[1.5px] border-indigo-600 text-indigo-600 font-medium bg-transparent hover:bg-indigo-50 dark:border-indigo-500 dark:text-indigo-500 dark:hover:bg-indigo-950/20',
 			},
 			size: {
 				default: 'h-9 px-4 py-2 has-[>svg]:px-3',

@@ -1,67 +1,86 @@
 'use client';
 
+import {
+	Card,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { X, Edit, Check, Undo2 } from 'lucide-react';
 import type { GenerationCandidateDto } from '@/types/types';
 
 interface FlashcardItemProps {
 	flashcard: GenerationCandidateDto;
+	onReject: (flashcard: GenerationCandidateDto) => void;
 	onAccept: (flashcard: GenerationCandidateDto) => void;
 	onEdit: (flashcard: GenerationCandidateDto) => void;
-	onReject: (flashcard: GenerationCandidateDto) => void;
+	isAccepted?: boolean;
 }
 
 export function FlashcardItem({
 	flashcard,
+	onReject,
 	onAccept,
 	onEdit,
-	onReject,
+	isAccepted = false,
 }: FlashcardItemProps) {
 	return (
-		<div className="rounded-lg border border-gray-200 bg-white shadow-sm">
-			<div className="divide-y divide-gray-100">
-				<div className="p-4">
-					<h3 className="mb-2 text-sm font-medium text-gray-500">
-						Przód fiszki
-					</h3>
-					<div className="rounded-md bg-gray-50 p-3 text-sm text-gray-900">
-						{flashcard.front}
-					</div>
+		<Card className="w-full">
+			<div className="grid grid-cols-2 divide-x">
+				<div>
+					<CardHeader>
+						<CardTitle className="text-lg font-medium">
+							Przód fiszki
+						</CardTitle>
+						<CardDescription className="text-muted-foreground h-[50px] overflow-hidden break-words text-ellipsis">
+							{flashcard.front}
+						</CardDescription>
+					</CardHeader>
 				</div>
-				<div className="p-4">
-					<h3 className="mb-2 text-sm font-medium text-gray-500">
-						Tył fiszki
-					</h3>
-					<div className="rounded-md bg-gray-50 p-3 text-sm text-gray-900">
-						{flashcard.back}
-					</div>
+				<div>
+					<CardHeader>
+						<CardTitle className="text-lg font-medium">
+							Tył fiszki
+						</CardTitle>
+						<CardDescription className="text-muted-foreground h-[50px] overflow-hidden break-words text-ellipsis">
+							{flashcard.back}
+						</CardDescription>
+					</CardHeader>
 				</div>
 			</div>
-
-			<div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50/50 px-4 py-3">
-				<button
-					className="inline-flex transform items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-75 hover:border-red-200 hover:bg-red-50 active:translate-y-0.5 active:scale-95 active:bg-red-100"
-					onClick={() => onReject(flashcard)}
-					type="button"
-				>
-					<span className="text-red-400">✕</span>
-					Odrzuć
-				</button>
-				<button
-					className="inline-flex transform items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-75 hover:border-blue-200 hover:bg-blue-50 active:translate-y-0.5 active:scale-95 active:bg-blue-100"
-					onClick={() => onEdit(flashcard)}
-					type="button"
-				>
-					<span className="text-blue-400">✎</span>
-					Edytuj
-				</button>
-				<button
-					className="inline-flex transform items-center justify-center gap-1.5 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-75 hover:border-green-200 hover:bg-green-50 active:translate-y-0.5 active:scale-95 active:bg-green-100"
-					onClick={() => onAccept(flashcard)}
-					type="button"
-				>
-					<span className="text-green-400">✓</span>
-					Akceptuj
-				</button>
-			</div>
-		</div>
+			<CardFooter className="flex justify-end gap-1 border-t">
+				{isAccepted ? (
+					<Button
+						onClick={() => onReject(flashcard)}
+						className="border-[1.5px] border-blue-600 font-medium text-blue-600 transition-transform hover:bg-blue-600/5 active:scale-95 dark:border-blue-500 dark:text-blue-500 dark:hover:bg-blue-500/5"
+					>
+						<Undo2 className="h-4 w-4" />
+					</Button>
+				) : (
+					<>
+						<Button
+							onClick={() => onReject(flashcard)}
+							className="border-[1.5px] border-red-600 font-medium text-red-600 transition-transform hover:bg-red-600/5 active:scale-95 dark:border-red-500 dark:text-red-500 dark:hover:bg-red-500/5"
+						>
+							<X className="h-4 w-4" />
+						</Button>
+						<Button
+							onClick={() => onEdit(flashcard)}
+							className="border-[1.5px] border-blue-600 font-medium text-blue-600 transition-transform hover:bg-blue-600/5 active:scale-95 dark:border-blue-500 dark:text-blue-500 dark:hover:bg-blue-500/5"
+						>
+							<Edit className="h-4 w-4" />
+						</Button>
+						<Button
+							onClick={() => onAccept(flashcard)}
+							className="border-[1.5px] border-green-600 font-medium text-green-600 transition-transform hover:bg-green-600/5 active:scale-95 dark:border-green-500 dark:text-green-500 dark:hover:bg-green-500/5"
+						>
+							<Check className="h-4 w-4" />
+						</Button>
+					</>
+				)}
+			</CardFooter>
+		</Card>
 	);
 }

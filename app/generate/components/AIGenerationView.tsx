@@ -237,6 +237,7 @@ export function AIGenerationView() {
 				(f) => f !== flashcard,
 			),
 		}));
+		setDeletingFlashcard(null);
 	};
 
 	const handleBulkSave = async () => {
@@ -284,8 +285,8 @@ export function AIGenerationView() {
 	};
 
 	return (
-		<div className="space-y-6">
-			<div className="border-border bg-card text-card-foreground rounded-lg border shadow-sm">
+		<div className="bg-background space-y-6 rounded-lg p-6">
+			<div className="border-border rounded-lg border shadow-sm">
 				<div className="border-border border-b px-6 py-4">
 					<h2 className="text-lg font-medium">
 						Wprowadź tekst do analizy
@@ -340,7 +341,7 @@ export function AIGenerationView() {
 			</div>
 
 			{viewModel.isLoading && (
-				<div className="border-border bg-card text-card-foreground rounded-lg border shadow-sm">
+				<div className="border-border rounded-lg border shadow-sm">
 					<div className="border-border border-b px-6 py-4">
 						<h2 className="text-lg font-medium">
 							Generowanie fiszek
@@ -354,7 +355,7 @@ export function AIGenerationView() {
 
 			{!viewModel.isLoading &&
 				viewModel.candidateFlashcards.length > 0 && (
-					<div className="border-border bg-card text-card-foreground rounded-lg border shadow-sm">
+					<div className="border-border rounded-lg border shadow-sm">
 						<div className="border-border border-b px-6 py-4">
 							<h2 className="text-lg font-medium">
 								Kandydaci na fiszki
@@ -377,7 +378,7 @@ export function AIGenerationView() {
 
 			{!viewModel.isLoading &&
 				viewModel.acceptedFlashcards.length > 0 && (
-					<div className="border-border bg-card text-card-foreground rounded-lg border shadow-sm">
+					<div className="border-border rounded-lg border shadow-sm">
 						<div className="border-border border-b px-6 py-4">
 							<h2 className="text-lg font-medium">
 								Zaakceptowane fiszki
@@ -410,7 +411,7 @@ export function AIGenerationView() {
 				flashcard={deletingFlashcard}
 				isOpen={deletingFlashcard !== null}
 				onClose={() => setDeletingFlashcard(null)}
-				onConfirm={handleConfirmDelete}
+				onDelete={handleConfirmDelete}
 			/>
 		</div>
 	);

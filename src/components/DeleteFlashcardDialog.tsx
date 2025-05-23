@@ -25,33 +25,27 @@ export function DeleteFlashcardDialog({
 }: DeleteFlashcardDialogProps) {
 	return (
 		<>
-			{isOpen && (
-				<div
-					className="fixed inset-0 bg-black/5 backdrop-blur-[2px]"
-					aria-hidden="true"
-				/>
-			)}
 			<Dialog
 				open={isOpen}
 				onOpenChange={(open) => !open && onClose()}
 			>
-				<DialogContent className="fixed top-[50%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] flex-col gap-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:max-w-md">
+				<DialogContent className="bg-card fixed top-[50%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] flex-col gap-4 rounded-md border p-6 shadow-sm sm:max-w-md">
 					<DialogHeader>
-						<DialogTitle className="text-xl font-semibold text-gray-900">
+						<DialogTitle className="text-xl font-semibold">
 							Usuń fiszkę
 						</DialogTitle>
 					</DialogHeader>
 
 					<div className="space-y-2">
-						<p className="text-xl font-semibold text-gray-900">
+						<p className="text-xl font-semibold">
 							Czy na pewno chcesz usunąć tę fiszkę?
 						</p>
-						<p className="text-gray-600">
+						<p className="text-muted-foreground">
 							Tej operacji nie można cofnąć.
 						</p>
 					</div>
 
-					<DialogFooter className="flex justify-end gap-2 border-t border-gray-200 pt-6">
+					<DialogFooter className="flex justify-end gap-2 border-t pt-6">
 						<Button onClick={onClose} variant="outline-info">
 							Anuluj
 						</Button>

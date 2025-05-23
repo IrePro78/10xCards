@@ -4,11 +4,11 @@
 :root {
 	/* Kolory bazowe - jasny motyw */
 	--background: #f5f5f7;
-	--foreground: #333333;
+	--foreground: #1a1a1a;
 	--card: #ffffff;
-	--card-foreground: #333333;
+	--card-foreground: #1a1a1a;
 	--popover: #ffffff;
-	--popover-foreground: #333333;
+	--popover-foreground: #1a1a1a;
 	--primary: #3b5aef;
 	--primary-foreground: #ffffff;
 	--secondary: #f3f4f6;
@@ -43,7 +43,7 @@ body {
 }
 
 .dark {
-	--background: #1e1e1e;
+	--background: #1a1a1a;
 	--foreground: #f9fafb;
 	--card: #2d2d2d;
 	--card-foreground: #f9fafb;

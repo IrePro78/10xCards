@@ -71,19 +71,13 @@ export function EditFlashcardDialog({
 
 	return (
 		<>
-			{isOpen && (
-				<div
-					className="fixed inset-0 bg-black/5 backdrop-blur-[2px]"
-					aria-hidden="true"
-				/>
-			)}
 			<Dialog
 				open={isOpen}
 				onOpenChange={(open) => !open && onClose()}
 			>
-				<DialogContent className="fixed top-[50%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] flex-col gap-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-gray-200 sm:max-w-xl">
+				<DialogContent className="fixed top-[50%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] flex-col gap-4 rounded-md border p-6 shadow-sm sm:max-w-xl">
 					<DialogHeader>
-						<DialogTitle className="text-xl font-semibold text-gray-900">
+						<DialogTitle className="text-xl font-semibold">
 							Edytuj fiszkę
 						</DialogTitle>
 					</DialogHeader>
@@ -92,7 +86,7 @@ export function EditFlashcardDialog({
 						<div className="space-y-2">
 							<Label
 								htmlFor="front"
-								className="text-xl font-semibold text-gray-900"
+								className="text-xl font-semibold"
 							>
 								Przód fiszki
 							</Label>
@@ -101,7 +95,7 @@ export function EditFlashcardDialog({
 								value={front}
 								onChange={(e) => setFront(e.target.value)}
 								maxLength={200}
-								className={`min-h-[80px] resize-y rounded-xl border border-gray-200 bg-white p-4 ${frontError ? 'border-red-600 focus-visible:ring-red-600' : ''}`}
+								className={`min-h-[80px] resize-y rounded-md border p-4 ${frontError ? 'border-red-600 focus-visible:ring-red-600' : ''}`}
 							/>
 							{frontError && (
 								<p className="text-sm font-medium text-red-600">
@@ -111,10 +105,7 @@ export function EditFlashcardDialog({
 						</div>
 
 						<div className="space-y-2">
-							<Label
-								htmlFor="back"
-								className="text-xl font-semibold text-gray-900"
-							>
+							<Label htmlFor="back" className="text-xl font-semibold">
 								Tył fiszki
 							</Label>
 							<Textarea
@@ -122,7 +113,7 @@ export function EditFlashcardDialog({
 								value={back}
 								onChange={(e) => setBack(e.target.value)}
 								maxLength={500}
-								className={`min-h-[160px] resize-y rounded-xl border border-gray-200 bg-white p-4 ${backError ? 'border-red-600 focus-visible:ring-red-600' : ''}`}
+								className={`min-h-[160px] resize-y rounded-md border p-4 ${backError ? 'border-red-600 focus-visible:ring-red-600' : ''}`}
 							/>
 							{backError && (
 								<p className="text-sm font-medium text-red-600">
@@ -132,7 +123,7 @@ export function EditFlashcardDialog({
 						</div>
 					</div>
 
-					<DialogFooter className="flex justify-end gap-2 border-t border-gray-200 pt-6">
+					<DialogFooter className="flex justify-end gap-2 border-t pt-6">
 						<Button onClick={onClose} variant="outline-destructive">
 							Anuluj
 						</Button>

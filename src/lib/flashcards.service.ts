@@ -22,9 +22,6 @@ export class FlashcardsService {
 		const flashcardsToInsert = flashcards.map((flashcard) => ({
 			...flashcard,
 			user_id,
-			// Mapowanie source 'manual' na 'user' w bazie danych
-			source:
-				flashcard.source === 'manual' ? 'user' : flashcard.source,
 		}));
 
 		// Wstawienie fiszek do bazy danych

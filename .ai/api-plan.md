@@ -3,7 +3,7 @@
 ## 1. Resources
 
 1. **Users** – Corresponds to the `users` table. Contains user details such as `id`, `email`, `password_hash`, `created_at`, and `updated_at`.
-2. **Flashcards** – Corresponds to the `flashcards` table. Represents flashcards created either manually or via AI. Key fields include `id`, `user_id`, `generation_id`, `front`, `back`, `source`, `created_at`, and `updated_at`. Validation constraints (e.g., `front` ≤ 200 characters, `back` ≤ 500 characters) are enforced at the database level.
+2. **Flashcards** – Corresponds to the `flashcards` table. Represents flashcards created either manually or via AI. Key fields include `id`, `user_id`, `generation_id`, `front`, `back`, `source`, `created_at`, and `updated_at`. Validation constraints (e.g., `front` ≤ 200 characters, `back` ≤ 500 characters) are enforced at the database level. The `source` field can have one of three values: 'ai' (for AI-generated flashcards), 'ai-edited' (for AI-generated flashcards that were edited by the user), or 'manual' (for manually created flashcards).
 3. **Generations** – Corresponds to the `generations` table. Represents AI flashcard generation sessions. Contains fields such as `id`, `user_id`, `model`, `generated_count`, `accepted_unedited_count`, `accepted_edited_count`, `source_text_hash`, `source_text_length`, `generation_duration`, `created_at`, and `updated_at`.
 4. **Generation Error Logs** – Corresponds to the `generation_error_logs` table. Stores error logs for AI generation sessions with fields like `id`, `user_id`, `model`, `source_text_hash`, `source_text_length`, `error_code`, `error_message`, and `created_at`.
 
@@ -27,7 +27,7 @@
     			"id": "uuid",
     			"front": "string",
     			"back": "string",
-    			"source": "ai/user",
+    			"source": "ai/ai-edited/manual",
     			"created_at": "timestamp",
     			"updated_at": "timestamp"
     		}
@@ -55,7 +55,7 @@
     	"generation_id": "uuid or null",
     	"front": "string",
     	"back": "string",
-    	"source": "ai/user",
+    	"source": "ai/ai-edited/manual",
     	"created_at": "timestamp",
     	"updated_at": "timestamp"
     }
@@ -73,7 +73,7 @@
     		{
     			"front": "string (max 200 characters)",
     			"back": "string (max 500 characters)",
-    			"source": "manual/ai/edited",
+    			"source": "ai/ai-edited/manual",
     			"generation_id": "uuid (opcjonalne, tylko dla fiszek z AI)"
     		}
     	]
@@ -88,7 +88,7 @@
     			"user_id": "uuid",
     			"front": "string",
     			"back": "string",
-    			"source": "user/ai/edited",
+    			"source": "ai/ai-edited/manual",
     			"generation_id": "uuid or null",
     			"created_at": "timestamp",
     			"updated_at": "timestamp"
@@ -96,7 +96,9 @@
     	]
     }
     ```
-  - **Validation:** Enforce character limits on `front` and `back`.
+  - **Validation:**
+    - Enforce character limits on `front` (max 200) and `back` (max 500)
+    - Validate `source` is one of: 'ai', 'ai-edited', 'manual'
   - **Success:** 201 Created
   - **Errors:** 400 Bad Request, 401 Unauthorized
 

@@ -197,13 +197,25 @@ export function AIGenerationView() {
 	const handleSaveEdit = (
 		editedFlashcard: GenerationCandidateDto,
 	) => {
+		// Sprawdzamy, czy faktycznie dokonano zmian w treści
+		const wasActuallyEdited =
+			editingFlashcard &&
+			(editingFlashcard.front !== editedFlashcard.front ||
+				editingFlashcard.back !== editedFlashcard.back);
+
+		// Przygotowujemy zaktualizowaną fiszkę
+		const updatedFlashcard = {
+			...editedFlashcard,
+			isEdited: wasActuallyEdited ? true : editingFlashcard?.isEdited,
+		};
+
 		setViewModel((prev) => ({
 			...prev,
 			candidateFlashcards: prev.candidateFlashcards.map((f) =>
-				f === editingFlashcard ? editedFlashcard : f,
+				f === editingFlashcard ? updatedFlashcard : f,
 			),
 			acceptedFlashcards: prev.acceptedFlashcards.map((f) =>
-				f === editingFlashcard ? editedFlashcard : f,
+				f === editingFlashcard ? updatedFlashcard : f,
 			),
 		}));
 		setEditingFlashcard(null);
@@ -253,7 +265,7 @@ export function AIGenerationView() {
 						(flashcard) => ({
 							front: flashcard.front,
 							back: flashcard.back,
-							source: 'manual',
+							source: flashcard.isEdited ? 'ai-edited' : 'ai',
 							generation_id: viewModel.generationId,
 						}),
 					),

@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import type {
-	CreateFlashcardsRequestDto,
-	CreateFlashcardsResponseDto,
-} from '@/types/types';
+import type { CreateFlashcardsResponseDto } from '@/types/types';
 import {
 	DEFAULT_USER_ID,
 	supabaseClient,
@@ -17,7 +14,7 @@ const flashcardSchema = z.object({
 		.string()
 		.max(200, 'Front text cannot exceed 200 characters'),
 	back: z.string().max(500, 'Back text cannot exceed 500 characters'),
-	source: z.enum(['manual', 'user']),
+	source: z.enum(['manual', 'ai', 'ai-edited']),
 	generation_id: z.string().uuid().nullable().optional(),
 });
 

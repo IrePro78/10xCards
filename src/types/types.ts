@@ -78,6 +78,7 @@ export type CreateGenerationCommandDto = {
 export type GenerationCandidateDto = {
 	front: string;
 	back: string;
+	isEdited?: boolean;
 };
 
 // Typ dla kandydujących fiszek pobieranych przez GET /generations/{id}/flashcards

@@ -5,7 +5,6 @@ import {
 	CardDescription,
 	CardFooter,
 	CardHeader,
-	CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Edit, Check, Undo2 } from 'lucide-react';
@@ -30,21 +29,15 @@ export function FlashcardItem({
 		<Card className="w-full">
 			<div className="grid grid-cols-2 divide-x">
 				<div>
-					<CardHeader>
-						<CardTitle className="text-lg font-medium">
-							Przód fiszki
-						</CardTitle>
-						<CardDescription className="text-muted-foreground h-[50px] overflow-hidden break-words text-ellipsis">
+					<CardHeader className="pb-2">
+						<CardDescription className="text-foreground min-h-[80px] text-lg leading-relaxed font-medium tracking-tight">
 							{flashcard.front}
 						</CardDescription>
 					</CardHeader>
 				</div>
 				<div>
-					<CardHeader>
-						<CardTitle className="text-lg font-medium">
-							Tył fiszki
-						</CardTitle>
-						<CardDescription className="text-muted-foreground h-[50px] overflow-hidden break-words text-ellipsis">
+					<CardHeader className="pb-2">
+						<CardDescription className="text-muted-foreground min-h-[80px] text-base">
 							{flashcard.back}
 						</CardDescription>
 					</CardHeader>

@@ -85,13 +85,15 @@ export function AIGenerationView() {
 				...prev,
 				totalFlashcards,
 				generationId: data.id,
+				// Dodajemy nowe fiszki od razu do istniejących
+				candidateFlashcards: [
+					...prev.candidateFlashcards,
+					...data.candidate_flashcards,
+				],
 			}));
 
 			// Symulujemy stopniowe pojawianie się fiszek
 			const addFlashcardsWithAnimation = async () => {
-				// Przygotowujemy nowe fiszki do dodania
-				const newFlashcards = data.candidate_flashcards;
-
 				// Całkowity czas animacji
 				const totalAnimationTime = 5000; // 5 sekund na całą animację
 
@@ -110,7 +112,7 @@ export function AIGenerationView() {
 				// Czas na 1% postępu
 				const incrementTime = totalAnimationTime / 100;
 
-				// Animujemy postęp i stopniowo dodajemy fiszki
+				// Animujemy tylko postęp
 				for (let percent = 1; percent <= 100; percent++) {
 					await new Promise((resolve) =>
 						setTimeout(resolve, incrementTime),
@@ -123,13 +125,6 @@ export function AIGenerationView() {
 
 					setViewModel((prev) => ({
 						...prev,
-						candidateFlashcards: [
-							...prev.candidateFlashcards,
-							...newFlashcards.slice(
-								prev.candidateFlashcards.length,
-								newFlashcardsCount,
-							),
-						],
 						currentFlashcard: newFlashcardsCount,
 						progress: percent,
 					}));
@@ -153,7 +148,6 @@ export function AIGenerationView() {
 				setShowProgress(false);
 			};
 
-			// Uruchamiamy animację
 			await addFlashcardsWithAnimation();
 		} catch (error) {
 			const errorMessage =

@@ -32,7 +32,7 @@ When introducing changes to the project, always follow the directory structure b
 - `./src/middleware/index.ts` - Next.js middleware logic
 - `./src/components` - Reusable client-side components (static or dynamic)
 - `./src/components/ui` - Atomic UI components from Shadcn/ui (e.g., Button, Input)
-- `./src/lib` - Services, utilities, and helper functions
+- `./src/lib/*.ts` - Services, utilities, and helper functions
 - `./public` - Static public assets
 
 When modifying the directory structure, always update this section.

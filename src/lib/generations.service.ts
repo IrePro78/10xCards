@@ -1,12 +1,13 @@
 import { SupabaseClient } from '@/db/supabase.client';
-import {
-	GenerationWithCandidatesDto,
-	GenerationCandidateDto,
-} from '@/types/types';
+import { GenerationWithCandidatesDto } from '@/types/types';
 import { createHash } from 'crypto';
+import { OpenRouterService } from './openrouter.service';
 
 export class GenerationsService {
-	constructor(private readonly supabase: SupabaseClient) {}
+	constructor(
+		private readonly supabase: SupabaseClient,
+		private readonly openRouter: OpenRouterService,
+	) {}
 
 	/**
 	 * Tworzy nową sesję generacji fiszek na podstawie tekstu źródłowego.
@@ -19,7 +20,7 @@ export class GenerationsService {
 	async createGeneration(
 		user_id: string,
 		source_text: string,
-		model: string = 'gpt-4',
+		model: string,
 	): Promise<GenerationWithCandidatesDto> {
 		// Obliczanie hasha i długości tekstu źródłowego
 		const source_text_hash = createHash('md5')
@@ -27,43 +28,55 @@ export class GenerationsService {
 			.digest('hex');
 		const source_text_length = source_text.length;
 
-		// Generowanie kandydujących fiszek (mock)
-		const candidate_flashcards = this.generateMockCandidates();
+		try {
+			// Generowanie fiszek przez OpenRouter
+			const candidate_flashcards =
+				await this.openRouter.generateFlashcards(source_text, model);
 
-		// Utworzenie rekordu w tabeli generations
-		const { data: generation, error } = await this.supabase
-			.from('generations')
-			.insert({
+			// Utworzenie rekordu w tabeli generations
+			const { data: generation, error } = await this.supabase
+				.from('generations')
+				.insert({
+					user_id,
+					model,
+					source_text_hash,
+					source_text_length,
+					generated_count: candidate_flashcards.length,
+					accepted_unedited_count: 0,
+					accepted_edited_count: 0,
+				})
+				.select()
+				.single();
+
+			if (error) {
+				// Logowanie błędu do tabeli generation_error_logs
+				await this.supabase.from('generation_error_logs').insert({
+					user_id,
+					model,
+					source_text_hash,
+					source_text_length,
+					error_message: error.message,
+				});
+
+				throw new Error(
+					`Błąd podczas tworzenia sesji generacji: ${error.message}`,
+				);
+			}
+
+			return {
+				...generation,
+				candidate_flashcards,
+			};
+		} catch (error) {
+			// Logowanie błędu generacji
+			await this.logGenerationError(
 				user_id,
 				model,
-				source_text_hash,
-				source_text_length,
-				generated_count: candidate_flashcards.length,
-				accepted_unedited_count: 0,
-				accepted_edited_count: 0,
-			})
-			.select()
-			.single();
-
-		if (error) {
-			// Logowanie błędu do tabeli generation_error_logs
-			await this.supabase.from('generation_error_logs').insert({
-				user_id,
-				model,
-				source_text_hash,
-				source_text_length,
-				error_message: error.message,
-			});
-
-			throw new Error(
-				`Błąd podczas tworzenia sesji generacji: ${error.message}`,
+				source_text,
+				error instanceof Error ? error.message : 'Unknown error',
 			);
+			throw error;
 		}
-
-		return {
-			...generation,
-			candidate_flashcards,
-		};
 	}
 
 	/**
@@ -91,22 +104,5 @@ export class GenerationsService {
 			source_text_length: source_text.length,
 			error_message,
 		});
-	}
-
-	/**
-	 * Generuje przykładowe kandydujące fiszki (mock).
-	 * W rzeczywistej implementacji byłyby generowane przez model AI.
-	 *
-	 * @returns Tablica przykładowych kandydujących fiszek
-	 */
-	private generateMockCandidates(): GenerationCandidateDto[] {
-		return [
-			{ front: 'Przykładowa fiszka 1', back: 'Odpowiedź 1' },
-			{ front: 'Przykładowa fiszka 2', back: 'Odpowiedź 2' },
-			{ front: 'Przykładowa fiszka 3', back: 'Odpowiedź 2' },
-			{ front: 'Przykładowa fiszka 4', back: 'Odpowiedź 2' },
-			{ front: 'Przykładowa fiszka 5', back: 'Odpowiedź 2' },
-			{ front: 'Przykładowa fiszka 6', back: 'Odpowiedź 3' },
-		];
 	}
 }

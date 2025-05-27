@@ -30,10 +30,11 @@ export class GenerationsService {
 
 		try {
 			// Generowanie fiszek przez OpenRouter
-			const candidate_flashcards =
+			const { flashcards: candidate_flashcards, duration } =
 				await this.openRouter.generateFlashcards(source_text, model);
 
 			// Utworzenie rekordu w tabeli generations
+			// generation_duration jest zapisywany w milisekundach (ms)
 			const { data: generation, error } = await this.supabase
 				.from('generations')
 				.insert({
@@ -44,6 +45,7 @@ export class GenerationsService {
 					generated_count: candidate_flashcards.length,
 					accepted_unedited_count: 0,
 					accepted_edited_count: 0,
+					generation_duration: duration, // czas w milisekundach
 				})
 				.select()
 				.single();

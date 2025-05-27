@@ -517,7 +517,11 @@ export class OpenRouterService {
 	async generateFlashcards(
 		sourceText: string,
 		model?: string,
-	): Promise<GenerationCandidateDto[]> {
+	): Promise<{
+		flashcards: GenerationCandidateDto[];
+		duration: number;
+	}> {
+		const startTime = Date.now();
 		const response = await this.chatComplete<{
 			flashcards: GenerationCandidateDto[];
 		}>({
@@ -528,6 +532,12 @@ export class OpenRouterService {
 			modelParams: this.defaultParams,
 		});
 
-		return response.flashcards;
+		const duration = Date.now() - startTime;
+		await this.logMetrics('generateFlashcards', startTime);
+
+		return {
+			flashcards: response.flashcards,
+			duration,
+		};
 	}
 }

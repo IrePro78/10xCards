@@ -61,6 +61,14 @@ export type FlashcardsListResponseDto = {
 	pagination: PaginationDto;
 };
 
+// Typ dla parametrów zapytania listy fiszek (surowe stringi z URL)
+export type FlashcardsQueryParams = {
+	page?: string;
+	per_page?: string;
+	search?: string;
+	sort?: 'created_at' | 'updated_at' | 'front' | 'back';
+};
+
 // ==========================
 // Typy dla Generations
 // ==========================

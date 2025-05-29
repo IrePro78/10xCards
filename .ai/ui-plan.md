@@ -14,14 +14,6 @@ System frontend oparty na Next.js i wykorzystujący komponenty shadcn/ui oraz Ta
   - Kluczowe komponenty: Inputy, przycisk logowania, inline alerts, system powiadomień (toast notifications).
   - UX, dostępność, bezpieczeństwo: Zgodność z WCAG AA, czytelna prezentacja informacji, zabezpieczenia przed atakami brute-force.
 
-- **Dashboard**
-
-  - Ścieżka: `/dashboard`
-  - Główny cel: Przegląd aktywności użytkownika, statystyk i powiadomień.
-  - Kluczowe informacje: Podsumowanie aktywności, statystyki generowania fiszek oraz powiadomienia.
-  - Kluczowe komponenty: Karty statystyk, wykresy (opcjonalne), skróty do głównych funkcji.
-  - UX, dostępność, bezpieczeństwo: Intuicyjny układ, szybki dostęp do kluczowych informacji, ochrona danych przed nieautoryzowanym dostępem.
-
 - **Widok Generowania Fiszek**
 
   - Ścieżka: `/generate`

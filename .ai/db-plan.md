@@ -331,6 +331,7 @@ EXECUTE FUNCTION update_generations_updated_at();
 1. **Źródła fiszek:**
 
    - `ai` - fiszki wygenerowane przez AI
+   - `ai-edited` - fiszki wygenerowane przez AI, które zostały edytowane przez użytkownika
    - `user` - fiszki utworzone ręcznie przez użytkownika
 
 2. **Relacja między fiszkami a generacjami:**

@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import type { GenerationCandidateDto } from '@/types/types';
+import type {
+	GenerationCandidateDto,
+	FlashcardListDto,
+} from '@/types/types';
 import { TextInputArea } from '@/components/TextInputArea';
-import { GenerateButton } from '@/components/GenerateButton';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
 import { FlashcardList } from '@/components/FlashcardList';
 import { EditFlashcardDialog } from '@/components/EditFlashcardDialog';
 import { DeleteFlashcardDialog } from '@/components/DeleteFlashcardDialog';
-import { BulkSaveButton } from '@/components/BulkSaveButton';
 import { ProgressBar } from '@/components/ProgressBar';
+import { Button } from '@/components/ui/button';
+import { Loader2, Save, Sparkles } from 'lucide-react';
 
 interface AIGenerationViewModel {
 	sourceText: string;
@@ -40,9 +43,9 @@ export function AIGenerationView() {
 	const [showProgress, setShowProgress] = useState(false);
 
 	const [editingFlashcard, setEditingFlashcard] =
-		useState<GenerationCandidateDto | null>(null);
+		useState<FlashcardListDto | null>(null);
 	const [deletingFlashcard, setDeletingFlashcard] =
-		useState<GenerationCandidateDto | null>(null);
+		useState<FlashcardListDto | null>(null);
 	const [isSaving, setIsSaving] = useState(false);
 
 	const handleTextChange = (text: string) => {
@@ -185,31 +188,46 @@ export function AIGenerationView() {
 	};
 
 	const handleEditFlashcard = (flashcard: GenerationCandidateDto) => {
-		setEditingFlashcard(flashcard);
+		const flashcardForEdit: FlashcardListDto = {
+			id: 'temp-' + Date.now(), // Tymczasowe ID dla edycji
+			front: flashcard.front,
+			back: flashcard.back,
+			source: 'ai',
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
+			last_review_at: null,
+		};
+		setEditingFlashcard(flashcardForEdit);
 	};
 
-	const handleSaveEdit = (
-		editedFlashcard: GenerationCandidateDto,
-	) => {
+	const handleSaveEdit = (editedFlashcard: FlashcardListDto) => {
+		if (!editingFlashcard) return;
+
 		// Sprawdzamy, czy faktycznie dokonano zmian w treści
 		const wasActuallyEdited =
-			editingFlashcard &&
-			(editingFlashcard.front !== editedFlashcard.front ||
-				editingFlashcard.back !== editedFlashcard.back);
+			editingFlashcard.front !== editedFlashcard.front ||
+			editingFlashcard.back !== editedFlashcard.back;
 
 		// Przygotowujemy zaktualizowaną fiszkę
-		const updatedFlashcard = {
-			...editedFlashcard,
-			isEdited: wasActuallyEdited ? true : editingFlashcard?.isEdited,
+		const updatedFlashcard: GenerationCandidateDto = {
+			front: editedFlashcard.front,
+			back: editedFlashcard.back,
+			isEdited: wasActuallyEdited,
 		};
 
 		setViewModel((prev) => ({
 			...prev,
 			candidateFlashcards: prev.candidateFlashcards.map((f) =>
-				f === editingFlashcard ? updatedFlashcard : f,
+				f.front === editingFlashcard.front &&
+				f.back === editingFlashcard.back
+					? updatedFlashcard
+					: f,
 			),
 			acceptedFlashcards: prev.acceptedFlashcards.map((f) =>
-				f === editingFlashcard ? updatedFlashcard : f,
+				f.front === editingFlashcard.front &&
+				f.back === editingFlashcard.back
+					? updatedFlashcard
+					: f,
 			),
 		}));
 		setEditingFlashcard(null);
@@ -229,8 +247,23 @@ export function AIGenerationView() {
 			}));
 		} else {
 			// Jeśli fiszka jest w liście kandydatów, pokazujemy modal potwierdzenia
-			setDeletingFlashcard(flashcard);
+			handleDeleteFlashcard(flashcard);
 		}
+	};
+
+	const handleDeleteFlashcard = (
+		flashcard: GenerationCandidateDto,
+	) => {
+		const flashcardForDelete: FlashcardListDto = {
+			id: 'temp-' + Date.now(), // Tymczasowe ID dla usuwania
+			front: flashcard.front,
+			back: flashcard.back,
+			source: 'ai',
+			created_at: new Date().toISOString(),
+			updated_at: new Date().toISOString(),
+			last_review_at: null,
+		};
+		setDeletingFlashcard(flashcardForDelete);
 	};
 
 	const handleConfirmDelete = (flashcard: GenerationCandidateDto) => {
@@ -291,8 +324,8 @@ export function AIGenerationView() {
 	};
 
 	return (
-		<div className="bg-background space-y-6 rounded-lg p-6">
-			<div className="border-border rounded-lg border shadow-sm">
+		<div className="bg-background space-y-6 rounded-xl p-6">
+			<div className="border-border rounded-xl border shadow-sm">
 				<div className="border-border border-b px-6 py-4">
 					<h2 className="text-lg font-medium">
 						Wprowadź tekst do analizy
@@ -306,7 +339,7 @@ export function AIGenerationView() {
 					/>
 
 					{viewModel.error && (
-						<div className="bg-destructive/10 text-destructive mt-4 rounded-md p-4">
+						<div className="bg-destructive/10 text-destructive mt-4 rounded-lg p-4">
 							{viewModel.error}
 						</div>
 					)}
@@ -321,33 +354,65 @@ export function AIGenerationView() {
 					</div>
 
 					<div className="mt-6 flex flex-col gap-4 sm:flex-row">
-						<GenerateButton
+						<Button
 							onClick={handleGenerate}
-							isLoading={viewModel.isLoading}
-							isDisabled={
+							disabled={
 								viewModel.sourceText.length < 1000 ||
-								viewModel.sourceText.length > 10000
+								viewModel.sourceText.length > 10000 ||
+								viewModel.isLoading
 							}
-						/>
+							className="rounded-lg bg-[#FF385C] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+						>
+							{viewModel.isLoading ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									<span className="animate-pulse">
+										Generowanie...
+									</span>
+								</>
+							) : (
+								<>
+									<Sparkles className="mr-2 h-4 w-4 animate-[wiggle_1s_ease-in-out_infinite]" />
+									Generuj fiszki
+								</>
+							)}
+						</Button>
 
 						{viewModel.generationId &&
 							viewModel.acceptedFlashcards.length > 0 && (
-								<BulkSaveButton
-									flashcards={viewModel.acceptedFlashcards}
-									generationId={viewModel.generationId}
-									onSave={handleBulkSave}
-									isLoading={isSaving}
-									flashcardsCount={
-										viewModel.acceptedFlashcards.length
-									}
-								/>
+								<Button
+									onClick={handleBulkSave}
+									disabled={isSaving}
+									className="rounded-lg bg-[#222222] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:bg-[#000000] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+								>
+									{isSaving ? (
+										<>
+											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+											<span className="animate-pulse">
+												Zapisywanie...
+											</span>
+										</>
+									) : (
+										<>
+											<Save className="mr-2 h-4 w-4 animate-bounce" />
+											Zapisz {
+												viewModel.acceptedFlashcards.length
+											}{' '}
+											{viewModel.acceptedFlashcards.length === 1
+												? 'fiszkę'
+												: viewModel.acceptedFlashcards.length < 5
+													? 'fiszki'
+													: 'fiszek'}
+										</>
+									)}
+								</Button>
 							)}
 					</div>
 				</div>
 			</div>
 
 			{viewModel.isLoading && (
-				<div className="border-border rounded-lg border shadow-sm">
+				<div className="border-border rounded-xl border shadow-sm">
 					<div className="border-border border-b px-6 py-4">
 						<h2 className="text-lg font-medium">
 							Generowanie fiszek
@@ -361,7 +426,7 @@ export function AIGenerationView() {
 
 			{!viewModel.isLoading &&
 				viewModel.candidateFlashcards.length > 0 && (
-					<div className="border-border rounded-lg border shadow-sm">
+					<div className="flashcard-container rounded-xl border shadow-sm">
 						<div className="border-border border-b px-6 py-4">
 							<h2 className="text-lg font-medium">
 								Kandydaci na fiszki
@@ -384,14 +449,13 @@ export function AIGenerationView() {
 
 			{!viewModel.isLoading &&
 				viewModel.acceptedFlashcards.length > 0 && (
-					<div className="border-border rounded-lg border shadow-sm">
+					<div className="flashcard-container rounded-xl border shadow-sm">
 						<div className="border-border border-b px-6 py-4">
 							<h2 className="text-lg font-medium">
 								Zaakceptowane fiszki
 							</h2>
 							<p className="text-muted-foreground mt-1 text-sm">
-								Lista zaakceptowanych fiszek. Kliknij przycisk powrotu
-								aby przenieść fiszkę z powrotem do kandydatów.
+								Lista zaakceptowanych fiszek
 							</p>
 						</div>
 						<div className="p-6">

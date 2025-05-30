@@ -76,7 +76,8 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
 	try {
 		// Pobierz user_id z kontekstu (dodane przez middleware)
-		const userId = request.headers.get('x-user-id');
+		// const userId = request.headers.get('x-user-id');
+		const userId = DEFAULT_USER_ID;
 		if (!userId) {
 			return NextResponse.json(
 				{ error: 'Unauthorized' },

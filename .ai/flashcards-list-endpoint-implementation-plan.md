@@ -31,11 +31,11 @@ Endpoint GET /flashcards służy do pobierania paginowanej listy fiszek należą
 ```typescript
 // Query parameters validation schema
 type FlashcardsQueryParams = {
-  page?: number;
-  per_page?: number;
-  search?: string;
-  sort?: 'created_at' | 'updated_at' | 'front' | 'back';
-}
+	page?: number;
+	per_page?: number;
+	search?: string;
+	sort?: 'created_at' | 'updated_at' | 'front' | 'back';
+};
 ```
 
 ## 4. Szczegóły odpowiedzi

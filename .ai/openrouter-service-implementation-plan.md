@@ -16,16 +16,16 @@ Konstruktor klasy przyjmuje opcjonalnie obiekt konfiguracji i automatycznie ład
 
 ```ts
 interface OpenRouterConfig {
-  apiKey?: string;
-  baseUrl?: string;
-  defaultModel?: string;
-  defaultParams?: Record<string, any>;
+	apiKey?: string;
+	baseUrl?: string;
+	defaultModel?: string;
+	defaultParams?: Record<string, any>;
 }
 
 class OpenRouterService {
-  constructor(config?: OpenRouterConfig) {
-    // ... ładowanie process.env.OPENROUTER_API_KEY itd. z Zod
-  }
+	constructor(config?: OpenRouterConfig) {
+		// ... ładowanie process.env.OPENROUTER_API_KEY itd. z Zod
+	}
 }
 ```
 
@@ -112,9 +112,9 @@ Każdy błąd powinien być odpowiednio typowany i zawierać:
    - `messages`:
      ```ts
      [
-       { role: 'system', content: options.systemMessage },
-       { role: 'user', content: options.userMessage }
-     ]
+     	{ role: 'system', content: options.systemMessage },
+     	{ role: 'user', content: options.userMessage },
+     ];
      ```
    - `model`: `options.modelName || defaultModel`
    - parametry: `{ ...defaultParams, ...options.modelParams }`
@@ -122,7 +122,9 @@ Każdy błąd powinien być odpowiednio typowany i zawierać:
 6. **Wysyłanie żądania** – użyj `fetch` lub biblioteki `undici`, ustaw nagłówki `Content-Type: application/json` i `Authorization`.
 7. **Walidacja odpowiedzi** – po `await response.json()` wyrzuć `ApiError` przy kodzie ≠ 200, a następnie użyj Zod:
    ```ts
-   const schema = zod.object(options.responseFormat.json_schema.schema);
+   const schema = zod.object(
+   	options.responseFormat.json_schema.schema,
+   );
    return schema.parse(raw.choices[0].message.content);
    ```
 8. **Dodaj retry/backoff** – dla błędów sieciowych i 429.
@@ -137,32 +139,45 @@ import { NextResponse } from 'next/server';
 import { OpenRouterService } from '@/lib/openrouter.service';
 
 export async function POST(request: Request) {
-  const { message } = await request.json();
-  const service = new OpenRouterService();
-  try {
-    const reply = await service.chatComplete<{ reply: string; usage: { prompt_tokens: number; completion_tokens: number }}>( {
-      systemMessage: 'You are assistant.',
-      userMessage: message,
-      responseFormat: {
-        type: 'json_schema',
-        json_schema: {
-          name: 'ChatResponse',
-          strict: true,
-          schema: {
-            type: 'object',
-            properties: {
-              reply: { type: 'string' },
-              usage: { type: 'object', properties: { prompt_tokens: { type: 'number' }, completion_tokens: { type: 'number' } }, required: ['prompt_tokens','completion_tokens'] }
-            },
-            required: ['reply','usage']
-          }
-        }
-      }
-    });
-    return NextResponse.json(reply);
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: error.code || 500 });
-  }
+	const { message } = await request.json();
+	const service = new OpenRouterService();
+	try {
+		const reply = await service.chatComplete<{
+			reply: string;
+			usage: { prompt_tokens: number; completion_tokens: number };
+		}>({
+			systemMessage: 'You are assistant.',
+			userMessage: message,
+			responseFormat: {
+				type: 'json_schema',
+				json_schema: {
+					name: 'ChatResponse',
+					strict: true,
+					schema: {
+						type: 'object',
+						properties: {
+							reply: { type: 'string' },
+							usage: {
+								type: 'object',
+								properties: {
+									prompt_tokens: { type: 'number' },
+									completion_tokens: { type: 'number' },
+								},
+								required: ['prompt_tokens', 'completion_tokens'],
+							},
+						},
+						required: ['reply', 'usage'],
+					},
+				},
+			},
+		});
+		return NextResponse.json(reply);
+	} catch (error) {
+		return NextResponse.json(
+			{ error: error.message },
+			{ status: error.code || 500 },
+		);
+	}
 }
 ```
 

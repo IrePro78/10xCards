@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { type FlashcardListDto } from '@/types/types';
 import {
 	Dialog,
 	DialogContent,
@@ -9,15 +10,15 @@ import {
 	DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import type { GenerationCandidateDto } from '@/types/types';
 
 interface EditFlashcardDialogProps {
-	flashcard: GenerationCandidateDto | null;
+	flashcard: FlashcardListDto | null;
 	isOpen: boolean;
 	onClose: () => void;
-	onSave: (flashcard: GenerationCandidateDto) => void;
+	onSave: (flashcard: FlashcardListDto) => void;
 }
 
 export function EditFlashcardDialog({
@@ -26,113 +27,84 @@ export function EditFlashcardDialog({
 	onClose,
 	onSave,
 }: EditFlashcardDialogProps) {
-	const [front, setFront] = useState('');
-	const [back, setBack] = useState('');
-	const [frontError, setFrontError] = useState<string | null>(null);
-	const [backError, setBackError] = useState<string | null>(null);
+	const [editedFlashcard, setEditedFlashcard] =
+		useState<FlashcardListDto | null>(null);
 
 	useEffect(() => {
-		if (flashcard) {
-			setFront(flashcard.front);
-			setBack(flashcard.back);
-		}
+		setEditedFlashcard(flashcard);
 	}, [flashcard]);
 
-	const validateFields = () => {
-		let isValid = true;
-
-		if (!front.trim()) {
-			setFrontError('Przód fiszki nie może być pusty');
-			isValid = false;
-		} else {
-			setFrontError(null);
-		}
-
-		if (!back.trim()) {
-			setBackError('Tył fiszki nie może być pusty');
-			isValid = false;
-		} else {
-			setBackError(null);
-		}
-
-		return isValid;
-	};
-
-	const handleSave = () => {
-		if (validateFields() && flashcard) {
-			onSave({
-				...flashcard,
-				front: front.trim(),
-				back: back.trim(),
-			});
-			onClose();
-		}
-	};
+	if (!editedFlashcard) return null;
 
 	return (
-		<>
-			<Dialog
-				open={isOpen}
-				onOpenChange={(open) => !open && onClose()}
-			>
-				<DialogContent className="fixed top-[50%] left-[50%] flex translate-x-[-50%] translate-y-[-50%] flex-col gap-4 rounded-md border p-6 shadow-sm sm:max-w-xl">
-					<DialogHeader>
-						<DialogTitle className="text-xl font-semibold">
-							Edytuj fiszkę
-						</DialogTitle>
-					</DialogHeader>
-
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="rounded-xl border-[#DDDDDD] p-6 shadow-xl">
+				<DialogHeader>
+					<DialogTitle className="text-xl font-semibold text-[#222222]">
+						Edytuj fiszkę
+					</DialogTitle>
+				</DialogHeader>
+				<div className="mt-6">
 					<div className="space-y-4">
 						<div className="space-y-2">
 							<Label
 								htmlFor="front"
-								className="text-xl font-semibold"
+								className="font-medium text-[#222222]"
 							>
-								Przód fiszki
+								Przód
 							</Label>
-							<Textarea
+							<Input
 								id="front"
-								value={front}
-								onChange={(e) => setFront(e.target.value)}
-								maxLength={200}
-								className={`min-h-[80px] resize-y rounded-md border p-4 ${frontError ? 'border-red-600 focus-visible:ring-red-600' : ''}`}
+								value={editedFlashcard.front}
+								onChange={(e) =>
+									setEditedFlashcard({
+										...editedFlashcard,
+										front: e.target.value,
+									})
+								}
+								placeholder="Wpisz pytanie lub termin..."
+								className="h-10 rounded-lg border-[#DDDDDD] bg-white text-[15px] transition-all hover:border-[#717171] focus:border-[#222222] focus:ring-0"
 							/>
-							{frontError && (
-								<p className="text-sm font-medium text-red-600">
-									{frontError}
-								</p>
-							)}
 						</div>
-
 						<div className="space-y-2">
-							<Label htmlFor="back" className="text-xl font-semibold">
-								Tył fiszki
+							<Label
+								htmlFor="back"
+								className="font-medium text-[#222222]"
+							>
+								Tył
 							</Label>
 							<Textarea
 								id="back"
-								value={back}
-								onChange={(e) => setBack(e.target.value)}
-								maxLength={500}
-								className={`min-h-[160px] resize-y rounded-md border p-4 ${backError ? 'border-red-600 focus-visible:ring-red-600' : ''}`}
+								value={editedFlashcard.back}
+								onChange={(e) =>
+									setEditedFlashcard({
+										...editedFlashcard,
+										back: e.target.value,
+									})
+								}
+								placeholder="Wpisz odpowiedź lub definicję..."
+								className="min-h-[100px] rounded-lg border-[#DDDDDD] bg-white text-[15px] transition-all hover:border-[#717171] focus:border-[#222222] focus:ring-0"
 							/>
-							{backError && (
-								<p className="text-sm font-medium text-red-600">
-									{backError}
-								</p>
-							)}
 						</div>
 					</div>
-
-					<DialogFooter className="flex justify-end gap-2 border-t pt-6">
-						<Button onClick={onClose} variant="outline-destructive">
-							Anuluj
-						</Button>
-						<Button onClick={handleSave} variant="outline-info">
-							Zapisz zmiany
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		</>
+				</div>
+				<DialogFooter className="mt-8 flex justify-end gap-3">
+					<Button
+						variant="outline"
+						onClick={onClose}
+						className="h-10 min-w-[100px] rounded-lg border-[#222222] bg-white text-[#222222] transition-all hover:scale-[1.02] hover:bg-[#F7F7F7] active:scale-[0.98]"
+					>
+						Anuluj
+					</Button>
+					<Button
+						variant="primary"
+						onClick={() => onSave(editedFlashcard)}
+						className="h-10 min-w-[100px] rounded-lg bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98]"
+					>
+						Zapisz
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
 	);
 }

@@ -1,14 +1,21 @@
 'use client';
 
-import type { GenerationCandidateDto } from '@/types/types';
+import type {
+	GenerationCandidateDto,
+	FlashcardListDto,
+} from '@/types/types';
 import { FlashcardItem } from './FlashcardItem';
 
 interface FlashcardListProps {
-	flashcards: GenerationCandidateDto[];
-	onAccept: (flashcard: GenerationCandidateDto) => void;
-	onEdit: (flashcard: GenerationCandidateDto) => void;
-	onReject: (flashcard: GenerationCandidateDto) => void;
+	flashcards: (GenerationCandidateDto | FlashcardListDto)[];
+	onAccept?: (flashcard: GenerationCandidateDto) => void;
+	onEdit?: (
+		flashcard: GenerationCandidateDto | FlashcardListDto,
+	) => void;
+	onReject?: (flashcard: GenerationCandidateDto) => void;
+	onDelete?: (flashcard: FlashcardListDto) => void;
 	isAccepted?: boolean;
+	mode?: 'generation' | 'list';
 }
 
 export function FlashcardList({
@@ -16,7 +23,9 @@ export function FlashcardList({
 	onAccept,
 	onEdit,
 	onReject,
+	onDelete,
 	isAccepted = false,
+	mode = 'generation',
 }: FlashcardListProps) {
 	if (!flashcards.length) {
 		return (
@@ -35,7 +44,9 @@ export function FlashcardList({
 					onAccept={onAccept}
 					onEdit={onEdit}
 					onReject={onReject}
+					onDelete={onDelete}
 					isAccepted={isAccepted}
+					mode={mode}
 				/>
 			))}
 		</div>

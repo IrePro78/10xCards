@@ -2,7 +2,11 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { MainNav } from '@/components/MainNav';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
+import { cn } from '@/lib/utils';
+import { Inter } from 'next/font/google';
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -11,6 +15,11 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
 	variable: '--font-geist-mono',
+	subsets: ['latin'],
+});
+
+const inter = Inter({
+	variable: '--font-inter',
 	subsets: ['latin'],
 });
 
@@ -27,18 +36,30 @@ export default function RootLayout({
 	return (
 		<html lang="pl" suppressHydrationWarning>
 			<body
-				className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}
+				className={cn(
+					'min-h-screen bg-[#F7F7F7] font-sans antialiased',
+					geistSans.variable,
+					geistMono.variable,
+					inter.className,
+				)}
 			>
-				<div className="min-h-screen px-4 py-8 md:px-8 lg:px-12">
-					<header className="mb-8 flex items-center justify-between">
-						<h1 className="text-2xl font-bold">10xCards</h1>
-						<ThemeToggle />
-					</header>
+				<ThemeProvider>
+					<div className="mx-auto max-w-7xl p-4 md:p-6 2xl:p-8">
+						<header className="flashcard-container mb-8 rounded-xl p-6">
+							<div className="mb-4 flex items-center justify-between">
+								<h1 className="text-2xl font-bold">10xCards</h1>
+								<ThemeToggle />
+							</div>
+							<MainNav />
+						</header>
 
-					<main>{children}</main>
-				</div>
+						<main className="flashcard-container rounded-xl p-6">
+							{children}
+						</main>
+					</div>
 
-				<Toaster richColors position="bottom-right" />
+					<Toaster richColors position="bottom-right" />
+				</ThemeProvider>
 			</body>
 		</html>
 	);

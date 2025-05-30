@@ -48,16 +48,15 @@ System frontend oparty na Next.js i wykorzystujący komponenty shadcn/ui oraz Ta
 ## 3. Mapa podróży użytkownika
 
 1. Użytkownik trafia na stronę `/login` i przeprowadza autentykację.
-2. Po pomyślnym logowaniu następuje przekierowanie do `/dashboard`, gdzie prezentowane są statystyki i powiadomienia.
-3. Użytkownik przechodzi do widoku `/generate`, by wprowadzić tekst źródłowy do generowania fiszek przez AI.
-4. Po zakończeniu procesu generowania, użytkownik trafia na widok `/flashcards`, gdzie recenzuje i wybiera fiszki do zatwierdzenia.
-5. Zaakceptowane fiszki są zbiorczo zapisywane za pomocą opcji "Zapisz wszystkie".
-6. Użytkownik może przejść do panelu `/profile` w celu zarządzania kontem lub do `/review-sessions`, aby rozpocząć sesję powtórek.
-7. Na każdym etapie interfejs wspiera użytkownika poprzez inline alerts oraz toast notifications, informujące o sukcesach i błędach.
+2. Użytkownik przechodzi do widoku `/generate`, by wprowadzić tekst źródłowy do generowania fiszek przez AI.
+3. Po zakończeniu procesu generowania, użytkownik trafia na widok `/flashcards`, gdzie recenzuje i wybiera fiszki do zatwierdzenia.
+4. Zaakceptowane fiszki są zbiorczo zapisywane za pomocą opcji "Zapisz wszystkie".
+5. Użytkownik może przejść do panelu `/profile` w celu zarządzania kontem lub do `/review-sessions`, aby rozpocząć sesję powtórek.
+6. Na każdym etapie interfejs wspiera użytkownika poprzez inline alerts oraz toast notifications, informujące o sukcesach i błędach.
 
 ## 4. Układ i struktura nawigacji
 
-- Główne menu (header lub sidebar) dostępne w widokach chronionych umożliwia szybkie przełączanie między dashboardem, widokiem generowania fiszek, recenzji, profilem oraz sesjami powtórek.
+- Główne menu (header lub sidebar) dostępne w widokach chronionych umożliwia szybkie przełączanie między widokiem generowania fiszek, listą fiszek, recenzji, profilem oraz sesjami powtórek.
 - Responsywne menu z wykorzystaniem komponentów shadcn/ui i Tailwind CSS dostosowuje się do urządzeń mobilnych i desktopowych.
 - Breadcrumbs pomagają użytkownikowi śledzić aktualną lokalizację w aplikacji.
 - W przypadku wystąpienia błędów, system prezentuje inline alerts oraz toast notifications bez zakłócania głównego przepływu użytkownika.

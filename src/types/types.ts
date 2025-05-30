@@ -24,7 +24,13 @@ export type FlashcardDto =
 // Typ reprezentujący skrócony widok flashcard (dla listy)
 export type FlashcardListDto = Pick<
 	FlashcardDto,
-	'id' | 'front' | 'back' | 'source' | 'created_at' | 'updated_at'
+	| 'id'
+	| 'front'
+	| 'back'
+	| 'source'
+	| 'created_at'
+	| 'updated_at'
+	| 'last_review_at'
 >;
 
 // Command Model dla tworzenia flashcard

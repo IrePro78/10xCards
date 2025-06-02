@@ -38,9 +38,9 @@ export function EditFlashcardDialog({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="rounded-xl border-[#DDDDDD] p-6 shadow-xl">
+			<DialogContent className="border-input rounded-xl p-6 shadow-xl">
 				<DialogHeader>
-					<DialogTitle className="text-xl font-semibold text-[#222222]">
+					<DialogTitle className="text-card-foreground text-xl font-semibold">
 						Edytuj fiszkę
 					</DialogTitle>
 				</DialogHeader>
@@ -49,7 +49,7 @@ export function EditFlashcardDialog({
 						<div className="space-y-2">
 							<Label
 								htmlFor="front"
-								className="font-medium text-[#222222]"
+								className="text-card-foreground font-medium"
 							>
 								Przód
 							</Label>
@@ -63,13 +63,13 @@ export function EditFlashcardDialog({
 									})
 								}
 								placeholder="Wpisz pytanie lub termin..."
-								className="h-10 rounded-lg border-[#DDDDDD] bg-white text-[15px] transition-all hover:border-[#717171] focus:border-[#222222] focus:ring-0"
+								className="border-input bg-card text-card-foreground hover:border-muted focus:border-ring h-10 rounded-lg text-[15px] transition-all focus:ring-0"
 							/>
 						</div>
 						<div className="space-y-2">
 							<Label
 								htmlFor="back"
-								className="font-medium text-[#222222]"
+								className="text-card-foreground font-medium"
 							>
 								Tył
 							</Label>
@@ -83,7 +83,7 @@ export function EditFlashcardDialog({
 									})
 								}
 								placeholder="Wpisz odpowiedź lub definicję..."
-								className="min-h-[100px] rounded-lg border-[#DDDDDD] bg-white text-[15px] transition-all hover:border-[#717171] focus:border-[#222222] focus:ring-0"
+								className="border-input bg-card text-card-foreground hover:border-muted focus:border-ring min-h-[100px] rounded-lg text-[15px] transition-all focus:ring-0"
 							/>
 						</div>
 					</div>
@@ -97,9 +97,9 @@ export function EditFlashcardDialog({
 						Anuluj
 					</Button>
 					<Button
-						variant="primary"
+						variant="outline"
 						onClick={() => onSave(editedFlashcard)}
-						className="h-10 min-w-[100px] rounded-lg bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98]"
+						className="h-10 min-w-[100px] rounded-lg border-[#FF385C] bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98]"
 					>
 						Zapisz
 					</Button>

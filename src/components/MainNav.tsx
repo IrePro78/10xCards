@@ -28,10 +28,10 @@ const navItems = [
 
 export function MainNav() {
 	return (
-		<nav className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-sm">
+		<nav className="bg-background/80 sticky top-0 z-50 border-b backdrop-blur-sm">
 			<div className="container flex h-16 items-center justify-between px-4">
 				<div className="flex items-center gap-8">
-					<div className="text-2xl font-bold text-[#FF385C]">
+					<div className="text-primary text-2xl font-bold">
 						10xCards
 					</div>
 					<div className="flex items-center gap-1">

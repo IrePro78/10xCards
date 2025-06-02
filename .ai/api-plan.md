@@ -65,7 +65,7 @@
 
 - **POST /flashcards**
 
-  - **Description:** Create a new flashcard (manual creation).
+  - **Description:** Create a new flashcard (manual and AI creation).
   - **Request Body:**
     ```json
     {

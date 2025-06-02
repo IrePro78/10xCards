@@ -11,22 +11,28 @@
 	--card-foreground: #1a1a1a;
 	--secondary: #e8e8e8;
 	--secondary-foreground: #1a1a1a;
-	--muted: #f0f0f0;
+	--muted: #f5f5f5;
 	--muted-foreground: #666666;
 	--accent: #e0e0e0;
 	--accent-foreground: #1a1a1a;
+	--popover: #ffffff;
+	--popover-foreground: #1a1a1a;
 
 	/* Akcenty */
-	--primary: #2563eb;
+	--primary: #ff385c;
 	--primary-foreground: #ffffff;
 	--destructive: #ef4444;
 	--destructive-foreground: #ffffff;
 
 	/* Obramowania */
 	--border: #e0e0e0;
-	--input: #ffffff;
+	--input: #e0e0e0;
 	--ring: #2563eb;
 	--radius: 0.5rem;
+
+	/* Modal inputs */
+	--modal-input-background: #ffffff;
+	--modal-input-foreground: #1a1a1a;
 }
 
 body {
@@ -46,65 +52,264 @@ body {
 		sans-serif;
 }
 
-/* Style dla selecta */
-[data-radix-select-trigger] {
-	background-color: #ffffff !important;
-}
-
-[data-radix-select-content] {
-	background-color: #ffffff !important;
-}
-
+/* Style dla selectów */
+[data-radix-select-trigger],
+[data-radix-select-content],
 [data-radix-select-viewport] {
-	background-color: #ffffff !important;
+	background-color: #f8f8f8 !important;
+	color: var(--foreground) !important;
 }
 
-.dark [data-radix-select-trigger] {
-	background-color: #2a2a2a !important;
-}
-
-.dark [data-radix-select-content] {
-	background-color: #2a2a2a !important;
-}
-
+.dark [data-radix-select-trigger],
+.dark [data-radix-select-content],
 .dark [data-radix-select-viewport] {
-	background-color: #2a2a2a !important;
+	background-color: #2b2b2b !important;
+	color: var(--foreground) !important;
+}
+
+/* Style dla opcji w selectach */
+[data-radix-select-item] {
+	background-color: #f8f8f8 !important;
+}
+
+.dark [data-radix-select-item] {
+	background-color: #2b2b2b !important;
+}
+
+[data-radix-select-item][data-highlighted] {
+	background-color: #e8e8e8 !important;
+}
+
+.dark [data-radix-select-item][data-highlighted] {
+	background-color: #333333 !important;
 }
 
 /* Style dla kontenerów fiszek */
 .flashcard-container {
-	background-color: #f8f8f8 !important;
-	border: 1px solid #e0e0e0 !important;
+	background-color: var(--background) !important;
+	border: 1px solid var(--border) !important;
 }
 
-.dark .flashcard-container {
-	background-color: #2a2a2a !important;
-	border: 1px solid #404040 !important;
+/* Style dla modali */
+[data-dialog-content] {
+	background-color: var(--card) !important;
+	color: var(--card-foreground) !important;
+	border: 1px solid var(--border) !important;
+}
+
+[data-dialog-overlay] {
+	background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Style dla inputów w modalach */
+[data-dialog-content] input,
+[data-dialog-content] textarea {
+	background-color: var(--card) !important;
+	color: var(--card-foreground) !important;
+	border-color: var(--border) !important;
+}
+
+[data-dialog-content] input:focus,
+[data-dialog-content] textarea:focus {
+	border-color: var(--ring) !important;
 }
 
 .dark {
 	/* Ciemny motyw */
-	--background: #1d1b1b;
+	--background: #1a1a1a;
 	--foreground: #ffffff;
 
 	/* Komponenty */
-	--card: #2a2a2a;
+	--card: #2b2b2b;
 	--card-foreground: #ffffff;
 	--secondary: #363636;
 	--secondary-foreground: #ffffff;
-	--muted: #404040;
+	--muted: #2b2b2b;
 	--muted-foreground: #a0a0a0;
-	--accent: #4a4a4a;
+	--accent: #3d3d3d;
 	--accent-foreground: #ffffff;
+	--popover: #2b2b2b;
+	--popover-foreground: #ffffff;
 
 	/* Akcenty */
-	--primary: #3b82f6;
+	--primary: #ff385c;
 	--primary-foreground: #ffffff;
 	--destructive: #ef4444;
 	--destructive-foreground: #ffffff;
 
 	/* Obramowania */
-	--border: #404040;
-	--input: #2a2a2a;
+	--border: #333333;
+	--input: #333333;
 	--ring: #3b82f6;
+
+	/* Modal inputs */
+	--modal-input-background: #262626;
+	--modal-input-foreground: #b60909;
+}
+
+/* Style dla modali w trybie ciemnym */
+.dark [data-dialog-content] {
+	background-color: var(--card) !important;
+	color: var(--card-foreground) !important;
+	border-color: var(--border) !important;
+}
+
+.dark [data-dialog-overlay] {
+	background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Style dla inputów w modalach w trybie ciemnym */
+.dark [data-dialog-content] input,
+.dark [data-dialog-content] textarea {
+	background-color: #262626 !important;
+	color: #ffffff !important;
+	border-color: #333333 !important;
+}
+
+.dark [data-dialog-content] input:focus,
+.dark [data-dialog-content] textarea:focus {
+	border-color: #3b82f6 !important;
+}
+
+/* Dodatkowe style z większym priorytetem */
+.dark [data-dialog-content] input[type='text'],
+.dark [data-dialog-content] input[type='password'],
+.dark [data-dialog-content] input[type='email'],
+.dark [data-dialog-content] input[type='number'],
+.dark [data-dialog-content] input[type='search'],
+.dark [data-dialog-content] input[type='tel'],
+.dark [data-dialog-content] input[type='url'],
+.dark [data-dialog-content] textarea {
+	background-color: #262626 !important;
+	color: #ffffff !important;
+	border-color: #333333 !important;
+}
+
+/* Style dla trybu ciemnego */
+.dark input,
+.dark textarea {
+	background-color: #262626 !important;
+	color: #ffffff !important;
+}
+
+.dark [data-dialog-content] input,
+.dark [data-dialog-content] textarea {
+	background-color: #262626 !important;
+	color: #ffffff !important;
+	border-color: #333333 !important;
+}
+
+.dark [data-dialog-content] input:focus,
+.dark [data-dialog-content] textarea:focus {
+	border-color: #3b82f6 !important;
+}
+
+/* Style dla przycisków w trybie ciemnym */
+.dark button[class*='destructive'],
+.dark button[class*='bg-destructive'] {
+	background-color: #ef4444 !important;
+	color: #ffffff !important;
+	border: none !important;
+}
+
+.dark button[class*='destructive']:hover,
+.dark button[class*='bg-destructive']:hover {
+	background-color: #dc2626 !important;
+}
+
+/* Style dla inputów i textarea w trybie ciemnym */
+.dark input,
+.dark textarea,
+.dark input:disabled,
+.dark textarea:disabled {
+	background-color: #262626 !important;
+	color: #ffffff !important;
+}
+
+.dark [data-dialog-content] input,
+.dark [data-dialog-content] textarea,
+.dark [data-dialog-content] input:disabled,
+.dark [data-dialog-content] textarea:disabled {
+	background-color: #262626 !important;
+	color: #ffffff !important;
+	border-color: #333333 !important;
+	opacity: 0.75;
+}
+
+.dark [data-dialog-content] input:focus,
+.dark [data-dialog-content] textarea:focus {
+	border-color: #3b82f6 !important;
+}
+
+/* Dodatkowe style dla konkretnych klas */
+.dark [data-dialog-content] input.bg-background,
+.dark [data-dialog-content] textarea.bg-background {
+	background-color: #262626 !important;
+	color: #ffffff !important;
+}
+
+.dark [data-dialog-content] input.text-foreground,
+.dark [data-dialog-content] textarea.text-foreground {
+	color: #ffffff !important;
+}
+
+.dark [data-dialog-content] input[disabled],
+.dark [data-dialog-content] textarea[disabled],
+.dark [data-dialog-content] input:disabled,
+.dark [data-dialog-content] textarea:disabled,
+.dark [data-dialog-content] .disabled input,
+.dark [data-dialog-content] .disabled textarea {
+	background-color: #262626 !important;
+	color: #ffffff !important;
+	border-color: #333333 !important;
+	opacity: 0.75 !important;
+}
+
+/* Style dla kontenerów w trybie jasnym */
+.flashcard-container,
+.bg-card,
+[data-dialog-content],
+.bg-background {
+	background-color: #f8f8f8 !important;
+}
+
+/* Style dla kontenerów w trybie ciemnym */
+.dark .flashcard-container,
+.dark .bg-card,
+.dark [data-dialog-content],
+.dark .bg-background {
+	background-color: #2b2b2b !important;
+}
+
+/* Style dla inputów i selectów */
+input,
+select,
+textarea,
+[data-radix-select-trigger] {
+	background-color: #ffffff !important;
+}
+
+.dark input,
+.dark select,
+.dark textarea,
+.dark [data-radix-select-trigger] {
+	background-color: #333333 !important;
+}
+
+/* Style dla menu i nawigacji */
+nav.bg-background\/80 {
+	background-color: rgba(248, 248, 248, 0.8) !important;
+}
+
+.dark nav.bg-background\/80 {
+	background-color: rgba(43, 43, 43, 0.8) !important;
+}
+
+/* Style dla hover stanów */
+.hover\:bg-accent\/50:hover {
+	background-color: rgba(224, 224, 224, 0.5) !important;
+}
+
+.dark .hover\:bg-accent\/50:hover {
+	background-color: rgba(61, 61, 61, 0.5) !important;
 }

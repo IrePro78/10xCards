@@ -102,11 +102,18 @@ Kryteria akceptacji:
 
 US-008
 Tytuł: Bezpieczny dostęp / Uwierzytelnianie
-Opis: Użytkownik musi się zalogować, aby uzyskać dostęp do funkcji tworzenia, edycji i usuwania fiszek oraz do zarządzania kontem.
+Opis: Jako użytkownik chcę mieć możliwość rejestracji i logowania się do systemu w sposób zapewniający bezpieczeństwo moich danych.
 Kryteria akceptacji:
 
-- System wymaga uwierzytelnienia przed wykonaniem operacji na fiszkach.
-- Funkcje zarządzania kontem są dostępne tylko dla zalogowanych użytkowników.
+- Logowanie i rejestracja odbywają się na dedykowanych stronach.
+- Logowanie wymaga podania adresu email i hasła.
+- Rejestracja wymaga podania adresu email, hasła i potwierdzenia hasła.
+- Użytkownik MOŻE przeglądać fiszki bez logowania się do systemu.
+- Użytkownik NIE MOŻE tworzyć, edytować i usuwać fiszek bez zalogowania się do systemu.
+- Użytkownik może logować się do systemu poprzez przycisk w prawym górnym rogu.
+- Użytkownik może się wylogować z systemu poprzez przycisk w prawym górnym rogu w głównym @layout.tsx lub @mainNav.tsx
+- Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub) - używamy tylko email i hasło.
+- Odzyskiwanie hasła powinno być możliwe.
 
 ## 6. Metryki sukcesu
 

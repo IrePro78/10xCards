@@ -327,7 +327,7 @@ export function AIGenerationView() {
 		<div className="bg-background space-y-6 rounded-xl p-6">
 			<div className="border-border rounded-xl border shadow-sm">
 				<div className="border-border border-b px-6 py-4">
-					<h2 className="text-lg font-medium">
+					<h2 className="text-foreground text-lg font-medium">
 						Wprowadź tekst do analizy
 					</h2>
 				</div>
@@ -383,7 +383,7 @@ export function AIGenerationView() {
 								<Button
 									onClick={handleBulkSave}
 									disabled={isSaving}
-									className="rounded-lg bg-[#222222] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:bg-[#000000] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+									className="rounded-lg bg-[#222222] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:bg-[#000000] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 dark:bg-white dark:text-[#222222] dark:hover:bg-white/90"
 								>
 									{isSaving ? (
 										<>

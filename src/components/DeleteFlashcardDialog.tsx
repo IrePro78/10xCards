@@ -27,34 +27,34 @@ export function DeleteFlashcardDialog({
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="rounded-xl border-[#DDDDDD] p-6 shadow-xl">
+			<DialogContent className="border-input rounded-xl p-6 shadow-xl">
 				<DialogHeader>
-					<DialogTitle className="text-xl font-semibold text-[#222222]">
+					<DialogTitle className="text-card-foreground text-xl font-semibold">
 						Usuń fiszkę
 					</DialogTitle>
 				</DialogHeader>
 				<div className="mt-6">
-					<p className="text-[#717171]">
+					<p className="text-muted-foreground">
 						Czy na pewno chcesz usunąć tę fiszkę? Tej operacji nie
 						można cofnąć.
 					</p>
 					<div className="mt-6 space-y-4">
 						<div className="space-y-2">
-							<p className="text-[15px] font-medium text-[#222222]">
+							<p className="text-card-foreground text-[15px] font-medium">
 								Przód
 							</p>
-							<div className="min-h-[40px] w-full rounded-lg border border-[#DDDDDD] bg-[#F7F7F7] px-4 py-3">
-								<p className="text-[15px] text-[#222222]">
+							<div className="border-input bg-card text-card-foreground min-h-[40px] w-full rounded-lg border px-4 py-3">
+								<p className="text-card-foreground text-[15px]">
 									{flashcard.front}
 								</p>
 							</div>
 						</div>
 						<div className="space-y-2">
-							<p className="text-[15px] font-medium text-[#222222]">
+							<p className="text-card-foreground text-[15px] font-medium">
 								Tył
 							</p>
-							<div className="min-h-[80px] w-full rounded-lg border border-[#DDDDDD] bg-[#F7F7F7] px-4 py-3">
-								<p className="text-[15px] text-[#717171]">
+							<div className="border-input bg-card text-card-foreground min-h-[80px] w-full rounded-lg border px-4 py-3">
+								<p className="text-muted-foreground text-[15px]">
 									{flashcard.back}
 								</p>
 							</div>

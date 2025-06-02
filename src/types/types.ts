@@ -24,13 +24,7 @@ export type FlashcardDto =
 // Typ reprezentujący skrócony widok flashcard (dla listy)
 export type FlashcardListDto = Pick<
 	FlashcardDto,
-	| 'id'
-	| 'front'
-	| 'back'
-	| 'source'
-	| 'created_at'
-	| 'updated_at'
-	| 'last_review_at'
+	'id' | 'front' | 'back' | 'source' | 'created_at' | 'updated_at'
 >;
 
 // Command Model dla tworzenia flashcard
@@ -73,6 +67,16 @@ export type FlashcardsQueryParams = {
 	per_page?: string;
 	search?: string;
 	sort?: 'created_at' | 'updated_at' | 'front' | 'back';
+};
+
+// Odpowiedź dla usunięcia flashcard
+export type DeleteFlashcardResponseDto = {
+	message: string;
+};
+
+// Typ dla walidacji parametru id
+export type FlashcardIdParams = {
+	id: string;
 };
 
 // ==========================

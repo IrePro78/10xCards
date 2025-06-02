@@ -1,12 +1,15 @@
 import { z } from 'zod';
-import { SupabaseClient, supabaseClient } from '@/db/supabase.client';
+import type { SupabaseClient } from '@/db/supabase.client';
+import { supabaseClient } from '@/db/supabase.client';
 import type {
 	CreateFlashcardCommandDto,
 	FlashcardDto,
 	FlashcardsQueryParams,
 	FlashcardsListResponseDto,
 	FlashcardListDto,
+	UpdateFlashcardCommandDto,
 } from '@/types/types';
+import type { Database } from '@/db/database.types';
 
 // Schema dla parametrów zapytania GET /flashcards
 const flashcardsQuerySchema = z.object({
@@ -146,3 +149,55 @@ export class FlashcardsService {
 export const flashcardsService = new FlashcardsService(
 	supabaseClient,
 );
+
+/**
+ * Aktualizuje istniejącą fiszkę, weryfikując właściciela
+ *
+ * @param supabase - Klient Supabase
+ * @param id - ID fiszki
+ * @param data - Dane do aktualizacji
+ * @param userId - ID użytkownika (tymczasowo DEFAULT_USER_ID)
+ */
+export async function updateFlashcard(
+	supabase: SupabaseClient,
+	id: string,
+	data: UpdateFlashcardCommandDto,
+	userId: string,
+): Promise<Database['public']['Tables']['flashcards']['Row']> {
+	const { data: updatedFlashcard, error } = await supabase
+		.from('flashcards')
+		.update({
+			...data,
+			updated_at: new Date().toISOString(),
+		})
+		.eq('id', id)
+		.eq('user_id', userId)
+		.select()
+		.single();
+
+	if (error) throw error;
+	if (!updatedFlashcard) throw new Error('Flashcard not found');
+
+	return updatedFlashcard;
+}
+
+/**
+ * Usuwa fiszkę, weryfikując właściciela
+ *
+ * @param supabase - Klient Supabase
+ * @param id - ID fiszki
+ * @param userId - ID użytkownika (tymczasowo DEFAULT_USER_ID)
+ */
+export async function deleteFlashcard(
+	supabase: SupabaseClient,
+	id: string,
+	userId: string,
+): Promise<void> {
+	const { error } = await supabase
+		.from('flashcards')
+		.delete()
+		.eq('id', id)
+		.eq('user_id', userId);
+
+	if (error) throw error;
+}

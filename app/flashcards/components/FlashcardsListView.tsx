@@ -207,12 +207,12 @@ export function FlashcardsListView() {
 
 	return (
 		<div className="space-y-6 rounded-xl p-6">
-			<div className="flashcard-container overflow-hidden rounded-xl border bg-white shadow-sm">
+			<div className="flashcard-container bg-background overflow-hidden rounded-xl border shadow-sm">
 				<div className="border-b px-6 py-4">
-					<h2 className="text-xl font-semibold text-[#222222]">
+					<h2 className="text-foreground text-xl font-semibold">
 						Twoje fiszki
 					</h2>
-					<p className="mt-1 text-sm text-[#717171]">
+					<p className="text-muted-foreground mt-1 text-sm">
 						Lista wszystkich zapisanych fiszek
 					</p>
 				</div>
@@ -226,40 +226,40 @@ export function FlashcardsListView() {
 								onChange={(e: ChangeEvent<HTMLInputElement>) =>
 									handleSearch(e.target.value)
 								}
-								className="h-12 w-full rounded-lg border-[#DDDDDD] bg-white pl-12 text-[15px] transition-all hover:border-[#717171] focus:border-[#222222] focus:ring-0"
+								className="border-input bg-background hover:border-muted focus:border-foreground h-12 w-full rounded-lg pl-12 text-[15px] transition-all focus:ring-0"
 							/>
-							<Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-[#717171]" />
+							<Search className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
 						</div>
 						<div className="flex-shrink-0">
 							<Select
 								value={viewModel.sort}
 								onValueChange={handleSort}
 							>
-								<SelectTrigger className="h-12 w-full min-w-[200px] rounded-lg border-[#DDDDDD] bg-white text-[15px] transition-all hover:border-[#717171] focus:border-[#222222] focus:ring-0">
+								<SelectTrigger className="border-input bg-background hover:border-muted focus:border-foreground h-12 w-full min-w-[200px] rounded-lg text-[15px] transition-all focus:ring-0">
 									<SelectValue placeholder="Sortuj po..." />
 								</SelectTrigger>
-								<SelectContent className="rounded-lg border-[#DDDDDD]">
+								<SelectContent className="border-input rounded-lg">
 									<SelectItem
 										value="created_at"
-										className="focus:bg-[#F7F7F7]"
+										className="focus:bg-accent"
 									>
 										Data utworzenia
 									</SelectItem>
 									<SelectItem
 										value="updated_at"
-										className="focus:bg-[#F7F7F7]"
+										className="focus:bg-accent"
 									>
 										Data aktualizacji
 									</SelectItem>
 									<SelectItem
 										value="front"
-										className="focus:bg-[#F7F7F7]"
+										className="focus:bg-accent"
 									>
 										Przód
 									</SelectItem>
 									<SelectItem
 										value="back"
-										className="focus:bg-[#F7F7F7]"
+										className="focus:bg-accent"
 									>
 										Tył
 									</SelectItem>
@@ -280,20 +280,20 @@ export function FlashcardsListView() {
 						</div>
 					) : viewModel.flashcards.length > 0 ? (
 						<>
-							<div className="relative overflow-x-auto rounded-xl border border-[#DDDDDD]">
+							<div className="border-input relative overflow-x-auto rounded-xl border">
 								<Table>
 									<TableHeader>
-										<TableRow className="border-[#DDDDDD] hover:bg-transparent">
-											<TableHead className="w-[300px] bg-[#F7F7F7] font-medium text-[#717171]">
+										<TableRow className="border-input hover:bg-transparent">
+											<TableHead className="bg-muted text-muted-foreground w-[300px] font-medium">
 												Przód
 											</TableHead>
-											<TableHead className="bg-[#F7F7F7] font-medium text-[#717171]">
+											<TableHead className="bg-muted text-muted-foreground font-medium">
 												Tył
 											</TableHead>
-											<TableHead className="w-[150px] bg-[#F7F7F7] text-right font-medium text-[#717171]">
+											<TableHead className="bg-muted text-muted-foreground w-[150px] text-right font-medium">
 												Data utworzenia
 											</TableHead>
-											<TableHead className="sticky right-0 w-[200px] bg-[#F7F7F7] text-right font-medium text-[#717171]">
+											<TableHead className="bg-muted text-muted-foreground sticky right-0 w-[200px] text-right font-medium">
 												Akcje
 											</TableHead>
 										</TableRow>
@@ -302,19 +302,19 @@ export function FlashcardsListView() {
 										{viewModel.flashcards.map((flashcard) => (
 											<TableRow
 												key={flashcard.id}
-												className="border-[#DDDDDD] hover:bg-[#F7F7F7]"
+												className="border-input hover:bg-accent/50"
 											>
-												<TableCell className="font-medium text-[#222222]">
+												<TableCell className="text-foreground font-medium">
 													{flashcard.front}
 												</TableCell>
-												<TableCell className="group relative text-[#717171]">
+												<TableCell className="group text-muted-foreground relative">
 													<div className="absolute inset-0 overflow-hidden">
 														<div className="truncate py-4 group-hover:overflow-x-auto group-hover:text-clip">
 															{flashcard.back}
 														</div>
 													</div>
 												</TableCell>
-												<TableCell className="text-right text-[#717171]">
+												<TableCell className="text-muted-foreground text-right">
 													{new Date(
 														flashcard.created_at,
 													).toLocaleDateString('pl')}
@@ -327,7 +327,7 @@ export function FlashcardsListView() {
 															onClick={() =>
 																handleEditFlashcard(flashcard)
 															}
-															className="h-8 rounded-lg border-[#222222] bg-white px-4 text-[#222222] transition-all hover:scale-[1.02] hover:bg-[#F7F7F7] active:scale-[0.98]"
+															className="border-foreground bg-background text-foreground hover:bg-accent h-8 rounded-lg border-2 px-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
 														>
 															Edytuj
 														</Button>
@@ -337,7 +337,7 @@ export function FlashcardsListView() {
 															onClick={() =>
 																handleDeleteFlashcard(flashcard)
 															}
-															className="h-8 rounded-lg border-[#FF385C] bg-white px-4 text-[#FF385C] transition-all hover:scale-[1.02] hover:bg-[#FFF8F9] active:scale-[0.98]"
+															className="bg-background h-8 rounded-lg border-2 border-[#FF385C] px-4 text-[#FF385C] transition-all hover:scale-[1.02] hover:bg-[#FFF8F9] active:scale-[0.98] dark:border-[#FF385C] dark:bg-transparent dark:text-[#FF385C] dark:hover:bg-[#FF385C]/10"
 														>
 															Usuń
 														</Button>
@@ -349,7 +349,7 @@ export function FlashcardsListView() {
 								</Table>
 							</div>
 							<div className="mt-6 flex items-center justify-between">
-								<div className="text-sm text-[#717171]">
+								<div className="text-muted-foreground text-sm">
 									Pokazano {viewModel.flashcards.length} z{' '}
 									{viewModel.totalItems} fiszek
 								</div>
@@ -361,11 +361,11 @@ export function FlashcardsListView() {
 											handlePageChange(viewModel.page - 1)
 										}
 										disabled={viewModel.page === 1}
-										className="h-8 w-8 rounded-lg border-[#222222] bg-white text-[#222222] transition-all hover:scale-[1.02] hover:bg-[#F7F7F7] active:scale-[0.98] disabled:border-[#DDDDDD] disabled:text-[#DDDDDD]"
+										className="border-foreground bg-background text-foreground hover:bg-accent disabled:border-muted disabled:text-muted-foreground h-8 w-8 rounded-lg border-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
 									>
 										<ChevronLeft className="h-4 w-4" />
 									</Button>
-									<span className="min-w-[4rem] text-center text-sm text-[#717171]">
+									<span className="text-muted-foreground min-w-[4rem] text-center text-sm">
 										{viewModel.page} z {viewModel.totalPages}
 									</span>
 									<Button
@@ -375,7 +375,7 @@ export function FlashcardsListView() {
 											handlePageChange(viewModel.page + 1)
 										}
 										disabled={viewModel.page === viewModel.totalPages}
-										className="h-8 w-8 rounded-lg border-[#222222] bg-white text-[#222222] transition-all hover:scale-[1.02] hover:bg-[#F7F7F7] active:scale-[0.98] disabled:border-[#DDDDDD] disabled:text-[#DDDDDD]"
+										className="border-foreground bg-background text-foreground hover:bg-accent disabled:border-muted disabled:text-muted-foreground h-8 w-8 rounded-lg border-2 transition-all hover:scale-[1.02] active:scale-[0.98]"
 									>
 										<ChevronRight className="h-4 w-4" />
 									</Button>

@@ -77,7 +77,7 @@ export function FlashcardItem({
 								onClick={() =>
 									onReject(flashcard as GenerationCandidateDto)
 								}
-								className="h-8 w-8 rounded-full border-[1.5px] border-[#FF385C] bg-white text-[#FF385C] transition-all duration-200 hover:scale-[1.02] hover:bg-[#FFF8F9] active:scale-[0.98]"
+								className="h-8 w-8 rounded-full border-[1.5px] border-[#222222] bg-white text-[#FF385C] transition-all duration-200 hover:scale-[1.02] hover:bg-[#FFF8F9] active:scale-[0.98]"
 							>
 								<X className="h-4 w-4" />
 							</Button>
@@ -99,7 +99,7 @@ export function FlashcardItem({
 								onClick={() =>
 									onAccept(flashcard as GenerationCandidateDto)
 								}
-								className="h-8 w-8 rounded-lg border-[1.5px] border-[#FF385C] bg-[#FF385C] text-white transition-all duration-200 hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98]"
+								className="h-8 w-8 rounded-lg border-[1.5px] border-[#222222] bg-[#FF385C] text-white transition-all duration-200 hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98]"
 							>
 								<Check className="h-4 w-4" />
 							</Button>

@@ -11,9 +11,10 @@ import { SkeletonLoader } from '@/components/SkeletonLoader';
 import { FlashcardList } from '@/components/FlashcardList';
 import { EditFlashcardDialog } from '@/components/EditFlashcardDialog';
 import { DeleteFlashcardDialog } from '@/components/DeleteFlashcardDialog';
+import { CreateFlashcardDialog } from '@/components/CreateFlashcardDialog';
 import { ProgressBar } from '@/components/ProgressBar';
 import { Button } from '@/components/ui/button';
-import { Loader2, Save, Sparkles } from 'lucide-react';
+import { Loader2, Save, Sparkles, Plus } from 'lucide-react';
 
 interface AIGenerationViewModel {
 	sourceText: string;
@@ -41,7 +42,8 @@ export function AIGenerationView() {
 	});
 
 	const [showProgress, setShowProgress] = useState(false);
-
+	const [isCreatingFlashcard, setIsCreatingFlashcard] =
+		useState(false);
 	const [editingFlashcard, setEditingFlashcard] =
 		useState<FlashcardListDto | null>(null);
 	const [deletingFlashcard, setDeletingFlashcard] =
@@ -195,7 +197,6 @@ export function AIGenerationView() {
 			source: 'ai',
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
-			last_review_at: null,
 		};
 		setEditingFlashcard(flashcardForEdit);
 	};
@@ -261,7 +262,6 @@ export function AIGenerationView() {
 			source: 'ai',
 			created_at: new Date().toISOString(),
 			updated_at: new Date().toISOString(),
-			last_review_at: null,
 		};
 		setDeletingFlashcard(flashcardForDelete);
 	};
@@ -292,7 +292,11 @@ export function AIGenerationView() {
 						(flashcard) => ({
 							front: flashcard.front,
 							back: flashcard.back,
-							source: flashcard.isEdited ? 'ai-edited' : 'ai',
+							source: flashcard.isEdited
+								? 'ai-edited'
+								: viewModel.generationId
+									? 'ai'
+									: 'manual',
 							generation_id: viewModel.generationId,
 						}),
 					),
@@ -321,6 +325,23 @@ export function AIGenerationView() {
 		} finally {
 			setIsSaving(false);
 		}
+	};
+
+	const handleCreateFlashcard = (
+		flashcard: GenerationCandidateDto,
+	) => {
+		setViewModel((prev) => ({
+			...prev,
+			acceptedFlashcards: [
+				...prev.acceptedFlashcards,
+				{
+					...flashcard,
+					isEdited: false,
+				},
+			],
+		}));
+		setIsCreatingFlashcard(false);
+		toast.success('Fiszka została utworzona');
 	};
 
 	return (
@@ -361,7 +382,7 @@ export function AIGenerationView() {
 								viewModel.sourceText.length > 10000 ||
 								viewModel.isLoading
 							}
-							className="rounded-lg bg-[#FF385C] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+							className="rounded-lg border-[1.5px] border-[#222222] bg-[#FF385C] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:border-[#E31C5F] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
 						>
 							{viewModel.isLoading ? (
 								<>
@@ -378,35 +399,40 @@ export function AIGenerationView() {
 							)}
 						</Button>
 
-						{viewModel.generationId &&
-							viewModel.acceptedFlashcards.length > 0 && (
-								<Button
-									onClick={handleBulkSave}
-									disabled={isSaving}
-									className="rounded-lg bg-[#222222] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:bg-[#000000] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 dark:bg-white dark:text-[#222222] dark:hover:bg-white/90"
-								>
-									{isSaving ? (
-										<>
-											<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-											<span className="animate-pulse">
-												Zapisywanie...
-											</span>
-										</>
-									) : (
-										<>
-											<Save className="mr-2 h-4 w-4 animate-bounce" />
-											Zapisz {
-												viewModel.acceptedFlashcards.length
-											}{' '}
-											{viewModel.acceptedFlashcards.length === 1
-												? 'fiszkę'
-												: viewModel.acceptedFlashcards.length < 5
-													? 'fiszki'
-													: 'fiszek'}
-										</>
-									)}
-								</Button>
-							)}
+						<Button
+							onClick={() => setIsCreatingFlashcard(true)}
+							className="rounded-lg border-[1.5px] border-[#222222] bg-[#222222] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:border-black hover:bg-black active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 dark:bg-white dark:text-[#222222] dark:hover:border-[#f5f5f5] dark:hover:bg-[#f5f5f5]"
+						>
+							<Plus className="mr-2 h-4 w-4" />
+							Dodaj fiszkę
+						</Button>
+
+						{viewModel.acceptedFlashcards.length > 0 && (
+							<Button
+								onClick={handleBulkSave}
+								disabled={isSaving}
+								className="rounded-lg border-[1.5px] border-[#222222] bg-[#222222] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:border-black hover:bg-black active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 dark:bg-white dark:text-[#222222] dark:hover:border-[#f5f5f5] dark:hover:bg-[#f5f5f5]"
+							>
+								{isSaving ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+										<span className="animate-pulse">
+											Zapisywanie...
+										</span>
+									</>
+								) : (
+									<>
+										<Save className="mr-2 h-4 w-4 animate-bounce" />
+										Zapisz {viewModel.acceptedFlashcards.length}{' '}
+										{viewModel.acceptedFlashcards.length === 1
+											? 'fiszkę'
+											: viewModel.acceptedFlashcards.length < 5
+												? 'fiszki'
+												: 'fiszek'}
+									</>
+								)}
+							</Button>
+						)}
 					</div>
 				</div>
 			</div>
@@ -482,6 +508,12 @@ export function AIGenerationView() {
 				isOpen={deletingFlashcard !== null}
 				onClose={() => setDeletingFlashcard(null)}
 				onDelete={handleConfirmDelete}
+			/>
+
+			<CreateFlashcardDialog
+				isOpen={isCreatingFlashcard}
+				onClose={() => setIsCreatingFlashcard(false)}
+				onCreate={handleCreateFlashcard}
 			/>
 		</div>
 	);

@@ -6,7 +6,8 @@ type ButtonVariant =
 	| 'secondary'
 	| 'outline'
 	| 'ghost'
-	| 'destructive';
+	| 'destructive'
+	| 'generate';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 const variants = {
@@ -20,6 +21,8 @@ const variants = {
 		'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
 	destructive:
 		'bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/50 disabled:pointer-events-none disabled:opacity-50',
+	generate:
+		'rounded-lg border-[1.5px] border-[#222222] bg-[#222222] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:bg-black hover:border-black active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 dark:bg-white dark:text-[#222222] dark:hover:bg-[#f5f5f5] dark:hover:border-[#f5f5f5]',
 } as const;
 
 const sizes = {

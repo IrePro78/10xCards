@@ -110,7 +110,7 @@ Kryteria akceptacji:
 - Rejestracja wymaga podania adresu email, hasła i potwierdzenia hasła.
 - Użytkownik MOŻE przeglądać fiszki bez logowania się do systemu.
 - Użytkownik NIE MOŻE tworzyć, edytować i usuwać fiszek bez zalogowania się do systemu.
-- Użytkownik może logować się do systemu poprzez przycisk w prawym górnym rogu.
+- Użytkownik może logować się do systemu poprzez przycisk w prawym górnym rogu w głównym @layout.tsx lub @mainNav.tsx
 - Użytkownik może się wylogować z systemu poprzez przycisk w prawym górnym rogu w głównym @layout.tsx lub @mainNav.tsx
 - Nie korzystamy z zewnętrznych serwisów logowania (np. Google, GitHub) - używamy tylko email i hasło.
 - Odzyskiwanie hasła powinno być możliwe.

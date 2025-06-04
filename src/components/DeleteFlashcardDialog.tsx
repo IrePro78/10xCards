@@ -72,7 +72,7 @@ export function DeleteFlashcardDialog({
 					<Button
 						variant="outline"
 						onClick={() => onDelete(flashcard)}
-						className="h-10 min-w-[100px] rounded-lg border-[#FF385C] bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98]"
+						className="h-10 min-w-[100px] rounded-lg border-[#222222] bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98]"
 					>
 						Usuń
 					</Button>

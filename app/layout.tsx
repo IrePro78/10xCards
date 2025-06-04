@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Toaster } from 'sonner';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MainNav } from '@/components/MainNav';
-import { ThemeProvider } from '@/components/ThemeProvider';
+
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Inter } from 'next/font/google';
+import { Providers } from '@/components/Providers';
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -42,8 +42,9 @@ export default function RootLayout({
 					geistMono.variable,
 					inter.className,
 				)}
+				suppressHydrationWarning
 			>
-				<ThemeProvider>
+				<Providers>
 					<div className="mx-auto max-w-7xl p-4 md:p-6 2xl:p-8">
 						<header className="flashcard-container mb-8 rounded-xl p-6">
 							<div className="mb-4 flex items-center justify-between">
@@ -57,9 +58,7 @@ export default function RootLayout({
 							{children}
 						</main>
 					</div>
-
-					<Toaster richColors position="bottom-right" />
-				</ThemeProvider>
+				</Providers>
 			</body>
 		</html>
 	);

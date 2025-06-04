@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { type FlashcardListDto } from '@/types/types';
+import type { GenerationCandidateDto } from '@/types/types';
 import {
 	Dialog,
 	DialogContent,
@@ -14,11 +14,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
-interface EditFlashcardDialogProps {
-	flashcard: FlashcardListDto | null;
+interface CreateFlashcardDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
-	onSave: (flashcard: FlashcardListDto) => void;
+	onCreate: (flashcard: GenerationCandidateDto) => void;
 }
 
 interface ValidationErrors {
@@ -26,20 +25,31 @@ interface ValidationErrors {
 	back?: string;
 }
 
-export function EditFlashcardDialog({
-	flashcard,
+export function CreateFlashcardDialog({
 	isOpen,
 	onClose,
-	onSave,
-}: EditFlashcardDialogProps) {
-	const [editedFlashcard, setEditedFlashcard] =
-		useState<FlashcardListDto | null>(null);
+	onCreate,
+}: CreateFlashcardDialogProps) {
+	const [newFlashcard, setNewFlashcard] =
+		useState<GenerationCandidateDto>({
+			front: '',
+			back: '',
+			isEdited: false,
+		});
+
 	const [errors, setErrors] = useState<ValidationErrors>({});
 
+	// Resetujemy stan przy otwarciu/zamknięciu modalu
 	useEffect(() => {
-		setEditedFlashcard(flashcard);
-		setErrors({});
-	}, [flashcard]);
+		if (isOpen) {
+			setNewFlashcard({
+				front: '',
+				back: '',
+				isEdited: false,
+			});
+			setErrors({});
+		}
+	}, [isOpen]);
 
 	const validateField = (name: 'front' | 'back', value: string) => {
 		if (!value.trim()) {
@@ -56,13 +66,11 @@ export function EditFlashcardDialog({
 		name: 'front' | 'back',
 		value: string,
 	) => {
-		if (!editedFlashcard) return;
-
 		// Aktualizujemy wartość pola
-		setEditedFlashcard({
-			...editedFlashcard,
+		setNewFlashcard((prev) => ({
+			...prev,
 			[name]: value,
-		});
+		}));
 
 		// Sprawdzamy walidację
 		const error = validateField(name, value);
@@ -72,12 +80,10 @@ export function EditFlashcardDialog({
 		}));
 	};
 
-	const handleSave = () => {
-		if (!editedFlashcard) return;
-
-		// Sprawdzamy walidację obu pól przed zapisem
-		const frontError = validateField('front', editedFlashcard.front);
-		const backError = validateField('back', editedFlashcard.back);
+	const handleCreate = () => {
+		// Sprawdzamy walidację obu pól przed utworzeniem
+		const frontError = validateField('front', newFlashcard.front);
+		const backError = validateField('back', newFlashcard.back);
 
 		const newErrors = {
 			front: frontError,
@@ -91,14 +97,20 @@ export function EditFlashcardDialog({
 			return;
 		}
 
-		onSave(editedFlashcard);
+		onCreate(newFlashcard);
+
+		// Resetujemy formularz
+		setNewFlashcard({
+			front: '',
+			back: '',
+			isEdited: false,
+		});
+		setErrors({});
 	};
 
-	if (!editedFlashcard) return null;
-
 	const isFormValid =
-		editedFlashcard.front.trim() !== '' &&
-		editedFlashcard.back.trim() !== '' &&
+		newFlashcard.front.trim() !== '' &&
+		newFlashcard.back.trim() !== '' &&
 		Object.values(errors).every((error) => !error);
 
 	return (
@@ -106,7 +118,7 @@ export function EditFlashcardDialog({
 			<DialogContent className="border-input rounded-xl p-6 shadow-xl">
 				<DialogHeader>
 					<DialogTitle className="text-card-foreground text-xl font-semibold">
-						Edytuj fiszkę
+						Utwórz nową fiszkę
 					</DialogTitle>
 				</DialogHeader>
 				<div className="mt-6">
@@ -120,7 +132,7 @@ export function EditFlashcardDialog({
 							</Label>
 							<Input
 								id="front"
-								value={editedFlashcard.front}
+								value={newFlashcard.front}
 								onChange={(e) =>
 									handleFieldChange('front', e.target.value)
 								}
@@ -139,7 +151,7 @@ export function EditFlashcardDialog({
 								</p>
 							)}
 							<p className="text-muted-foreground text-xs">
-								{editedFlashcard.front.length}/200 znaków
+								{newFlashcard.front.length}/200 znaków
 							</p>
 						</div>
 						<div className="space-y-2">
@@ -151,7 +163,7 @@ export function EditFlashcardDialog({
 							</Label>
 							<Textarea
 								id="back"
-								value={editedFlashcard.back}
+								value={newFlashcard.back}
 								onChange={(e) =>
 									handleFieldChange('back', e.target.value)
 								}
@@ -170,7 +182,7 @@ export function EditFlashcardDialog({
 								</p>
 							)}
 							<p className="text-muted-foreground text-xs">
-								{editedFlashcard.back.length}/500 znaków
+								{newFlashcard.back.length}/500 znaków
 							</p>
 						</div>
 					</div>
@@ -185,11 +197,11 @@ export function EditFlashcardDialog({
 					</Button>
 					<Button
 						variant="outline"
-						onClick={handleSave}
+						onClick={handleCreate}
 						disabled={!isFormValid}
 						className="h-10 min-w-[100px] rounded-lg border-[#222222] bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:border-[#E31C5F] hover:bg-[#E31C5F] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
 					>
-						Zapisz
+						Utwórz
 					</Button>
 				</DialogFooter>
 			</DialogContent>

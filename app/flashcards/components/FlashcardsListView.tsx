@@ -327,7 +327,7 @@ export function FlashcardsListView() {
 															onClick={() =>
 																handleEditFlashcard(flashcard)
 															}
-															className="border-foreground bg-background text-foreground hover:bg-accent h-8 rounded-lg border-2 px-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
+															className="border-foreground bg-background text-foreground hover:bg-accent h-8 rounded-lg border-[1.5px] px-4 transition-all hover:scale-[1.02] active:scale-[0.98]"
 														>
 															Edytuj
 														</Button>
@@ -337,7 +337,7 @@ export function FlashcardsListView() {
 															onClick={() =>
 																handleDeleteFlashcard(flashcard)
 															}
-															className="bg-background h-8 rounded-lg border-2 border-[#FF385C] px-4 text-[#FF385C] transition-all hover:scale-[1.02] hover:bg-[#FFF8F9] active:scale-[0.98] dark:border-[#FF385C] dark:bg-transparent dark:text-[#FF385C] dark:hover:bg-[#FF385C]/10"
+															className="bg-background h-8 rounded-lg border-[1.5px] border-[#FF385C] px-4 text-[#FF385C] transition-all hover:scale-[1.02] hover:bg-[#FFF8F9] active:scale-[0.98] dark:border-[#FF385C] dark:bg-transparent dark:text-[#FF385C] dark:hover:bg-[#FF385C]/10"
 														>
 															Usuń
 														</Button>

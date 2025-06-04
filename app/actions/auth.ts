@@ -1,0 +1,83 @@
+import { createSupabaseServerClient } from '@/db/supabase.server';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { toast } from 'sonner';
+
+// Rate limiting
+const RATE_LIMIT = {
+	MAX_ATTEMPTS: 5,
+	BLOCK_DURATION: 2 * 60 * 1000, // 2 minuty w milisekundach
+};
+
+const loginAttempts = new Map<
+	string,
+	{ count: number; timestamp: number }
+>();
+
+export async function login(formData: FormData) {
+	const email = formData.get('email') as string;
+	const password = formData.get('password') as string;
+
+	// Sprawdzenie rate limitingu
+	const cookieStore = await cookies();
+	const ipAddress = cookieStore.get('client-ip')?.value || 'unknown';
+	const attempt = loginAttempts.get(ipAddress);
+	const now = Date.now();
+
+	if (attempt) {
+		if (attempt.count >= RATE_LIMIT.MAX_ATTEMPTS) {
+			const timeElapsed = now - attempt.timestamp;
+			if (timeElapsed < RATE_LIMIT.BLOCK_DURATION) {
+				const remainingTime = Math.ceil(
+					(RATE_LIMIT.BLOCK_DURATION - timeElapsed) / 1000 / 60,
+				);
+				return {
+					error: `Zbyt wiele prób logowania. Spróbuj ponownie za ${remainingTime} minut.`,
+				};
+			}
+			// Reset po upływie czasu blokady
+			loginAttempts.delete(ipAddress);
+		}
+	}
+
+	const supabase = await createSupabaseServerClient();
+
+	const { error } = await supabase.auth.signInWithPassword({
+		email,
+		password,
+	});
+
+	if (error) {
+		// Aktualizacja licznika prób
+		const currentAttempt = loginAttempts.get(ipAddress) || {
+			count: 0,
+			timestamp: now,
+		};
+		loginAttempts.set(ipAddress, {
+			count: currentAttempt.count + 1,
+			timestamp: now,
+		});
+
+		if (error.message === 'Email not confirmed') {
+			toast.error(
+				'Konto nie zostało potwierdzone. Sprawdź swoją skrzynkę email.',
+			);
+			return { error: 'Konto nie zostało potwierdzone' };
+		}
+
+		if (error.message === 'Account disabled') {
+			toast.error(
+				'Konto zostało zablokowane. Skontaktuj się z administratorem.',
+			);
+			return { error: 'Konto zablokowane' };
+		}
+
+		return { error: 'Nieprawidłowy email lub hasło' };
+	}
+
+	// Reset licznika prób po udanym logowaniu
+	loginAttempts.delete(ipAddress);
+
+	toast.success('Zalogowano pomyślnie!');
+	redirect('/generate');
+}

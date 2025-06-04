@@ -1,0 +1,203 @@
+# Supabase Auth Integration with Next.js
+
+## Core Requirements
+
+1. Use `@supabase/ssr` package (NOT auth-helpers)
+2. Use ONLY `getAll` and `setAll` for cookie management
+3. NEVER use individual `get`, `set`, or `remove` cookie methods
+4. Implement proper session management with middleware based on JWT (Supabase Auth)
+
+## Installation
+
+```bash
+npm install @supabase/ssr @supabase/supabase-js
+```
+
+## Environment Variables
+
+Create `.env` file with required Supabase credentials:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+```
+
+For better TypeScript support, update `src/env.d.ts`:
+
+```typescript
+/// <reference types="next" />
+
+declare namespace NodeJS {
+  interface ProcessEnv {
+    NEXT_PUBLIC_SUPABASE_URL: string;
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
+  }
+}
+```
+
+## Implementation Steps
+
+### 1. Create OR Extend Supabase Server Instance
+
+In `src/db/supabase.client.ts`:
+
+```typescript
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import type { Database } from './database.types'
+
+export const cookieOptions: CookieOptions = {
+  path: '/',
+  secure: true,
+  httpOnly: true,
+  sameSite: 'lax',
+}
+
+export function createSupabaseServerClient() {
+  const cookieStore = cookies()
+
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          cookieStore.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          cookieStore.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
+}
+```
+
+### 2. Implement OR Extend Authentication Middleware
+
+In `src/middleware/index.ts`:
+
+```typescript
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+
+// Public paths - Auth API endpoints & Server-Rendered Pages
+const PUBLIC_PATHS = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/reset-password',
+  '/api/auth/login',
+  '/api/auth/register',
+  '/api/auth/reset-password',
+]
+
+export async function middleware(request: NextRequest) {
+  // Skip auth check for public paths
+  if (PUBLIC_PATHS.some(path => request.nextUrl.pathname.startsWith(path))) {
+    return NextResponse.next()
+  }
+
+  const response = NextResponse.next()
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options })
+          response.cookies.set({ name, value, ...options })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: '', ...options })
+          response.cookies.set({ name, value: '', ...options })
+        },
+      },
+    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user && !PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
+    return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
+
+  return response
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+}
+```
+
+### 3. Create Auth Route Handlers
+
+In `app/api/auth/route.ts`:
+
+```typescript
+import { createSupabaseServerClient } from '@/db/supabase.client'
+import { NextResponse } from 'next/server'
+
+export async function POST(request: Request) {
+  const { email, password } = await request.json()
+  const supabase = createSupabaseServerClient()
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 })
+  }
+
+  return NextResponse.json({ user: data.user })
+}
+```
+
+### 4. Protect Server Components
+
+In `app/protected/page.tsx`:
+
+```typescript
+import { createSupabaseServerClient } from '@/db/supabase.client'
+import { redirect } from 'next/navigation'
+
+export default async function ProtectedPage() {
+  const supabase = createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/auth/login')
+  }
+
+  return (
+    <div>
+      <h1>Protected Page</h1>
+      <p>Welcome {user.email}!</p>
+    </div>
+  )
+}
+```
+
+## Security Best Practices
+
+- Set proper cookie options (httpOnly, secure, sameSite)
+- Never expose Supabase integration & keys in client-side components
+- Validate all user input server-side
+- Use proper error handling and logging
+
+## Common Pitfalls
+
+1. DO NOT use individual cookie methods (get/set/remove)
+2. DO NOT import from @supabase/auth-helpers-nextjs
+3. DO NOT skip the auth.getUser() call in middleware
+4. DO NOT modify cookie handling logic
+5. Always handle auth state changes properly

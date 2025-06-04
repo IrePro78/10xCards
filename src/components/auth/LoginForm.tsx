@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,7 @@ export function LoginForm() {
 	});
 	const [errors, setErrors] = useState<ValidationErrors>({});
 	const [isLoading, setIsLoading] = useState(false);
-	const router = useRouter();
+	const [serverError, setServerError] = useState<string | null>(null);
 
 	const validateField = (
 		name: 'email' | 'password',
@@ -51,6 +50,32 @@ export function LoginForm() {
 			...prev,
 			[name]: error,
 		}));
+
+		// Reset server error when user starts typing
+		setServerError(null);
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setIsLoading(true);
+		setServerError(null);
+
+		const formDataToSend = new FormData();
+		formDataToSend.append('email', formData.email);
+		formDataToSend.append('password', formData.password);
+
+		try {
+			const result = await login(formDataToSend);
+			if (result?.error) {
+				setServerError(result.error);
+			}
+		} catch (_error) {
+			setServerError(
+				'Wystąpił błąd podczas logowania. Spróbuj ponownie później.',
+			);
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const isFormValid =
@@ -69,7 +94,7 @@ export function LoginForm() {
 				</p>
 			</div>
 
-			<div className="space-y-4">
+			<form onSubmit={handleSubmit} className="space-y-4">
 				<div className="space-y-2">
 					<Label htmlFor="email">Adres email</Label>
 					<Input
@@ -81,7 +106,7 @@ export function LoginForm() {
 							handleFieldChange('email', e.target.value)
 						}
 						className={`border-input bg-background text-foreground hover:border-muted focus:border-ring h-12 rounded-lg text-[15px] transition-all focus:ring-0 ${
-							errors.email ? 'border-destructive' : ''
+							errors.email || serverError ? 'border-destructive' : ''
 						}`}
 					/>
 					{errors.email && (
@@ -108,7 +133,9 @@ export function LoginForm() {
 							handleFieldChange('password', e.target.value)
 						}
 						className={`border-input bg-background text-foreground hover:border-muted focus:border-ring h-12 rounded-lg text-[15px] transition-all focus:ring-0 ${
-							errors.password ? 'border-destructive' : ''
+							errors.password || serverError
+								? 'border-destructive'
+								: ''
 						}`}
 					/>
 					{errors.password && (
@@ -118,15 +145,24 @@ export function LoginForm() {
 					)}
 				</div>
 
+				{serverError && (
+					<p className="text-destructive text-center text-sm">
+						{serverError}
+					</p>
+				)}
+
 				<Button
+					asChild
 					disabled={!isFormValid || isLoading}
 					className="h-12 w-full rounded-lg bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50"
 				>
-					{isLoading ? (
-						<div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-					) : (
-						'Zaloguj się'
-					)}
+					<button type="submit">
+						{isLoading ? (
+							<div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+						) : (
+							'Zaloguj się'
+						)}
+					</button>
 				</Button>
 
 				<div className="text-muted-foreground text-center text-sm">
@@ -138,7 +174,7 @@ export function LoginForm() {
 						Zarejestruj się
 					</Link>
 				</div>
-			</div>
+			</form>
 		</div>
 	);
 }

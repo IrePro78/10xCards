@@ -19,3 +19,12 @@ declare namespace NodeJS {
 		NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
 	}
 }
+
+interface ImportMetaEnv {
+	readonly NEXT_PUBLIC_SUPABASE_URL: string;
+	readonly NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
+}
+
+interface ImportMeta {
+	readonly env: ImportMetaEnv;
+}

@@ -52,6 +52,23 @@ const config: Config = {
 					foreground: 'var(--card-foreground)',
 				},
 				error: 'var(--destructive)',
+				airbnb: {
+					primary: '#FF385C',
+					primaryDark: '#D70466',
+					secondary: '#222222',
+					neutral: {
+						50: '#F7F7F7',
+						100: '#EBEBEB',
+						200: '#DDDDDD',
+						300: '#CCCCCC',
+						400: '#BBBBBB',
+						500: '#717171',
+						600: '#484848',
+						700: '#333333',
+						800: '#222222',
+						900: '#000000',
+					},
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius-lg)',
@@ -77,6 +94,7 @@ const config: Config = {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				wiggle: 'wiggle 1s ease-in-out infinite',
+				'scale-down': 'scale-down 100ms ease-in-out forwards',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -90,6 +108,10 @@ const config: Config = {
 				wiggle: {
 					'0%, 100%': { transform: 'rotate(-3deg)' },
 					'50%': { transform: 'rotate(3deg)' },
+				},
+				'scale-down': {
+					'0%': { transform: 'scale(1)' },
+					'100%': { transform: 'scale(0.98)' },
 				},
 			},
 			spacing: {

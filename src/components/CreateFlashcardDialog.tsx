@@ -189,17 +189,19 @@ export function CreateFlashcardDialog({
 				</div>
 				<DialogFooter className="mt-8 flex justify-end gap-3">
 					<Button
-						variant="outline"
+						variant="action-secondary"
 						onClick={onClose}
-						className="h-10 min-w-[100px] rounded-lg border-[1.5px] border-[#222222] bg-white text-[#222222] transition-all hover:scale-[1.02] hover:bg-[#F7F7F7] active:scale-[0.98]"
+						size="lg"
+						className="min-w-[100px]"
 					>
 						Anuluj
 					</Button>
 					<Button
-						variant="outline"
+						variant="action-primary"
 						onClick={handleCreate}
 						disabled={!isFormValid}
-						className="h-10 min-w-[100px] rounded-lg border-[#222222] bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:border-[#E31C5F] hover:bg-[#E31C5F] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+						size="lg"
+						className="min-w-[100px]"
 					>
 						Utwórz
 					</Button>

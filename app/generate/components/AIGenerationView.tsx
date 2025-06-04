@@ -13,8 +13,9 @@ import { EditFlashcardDialog } from '@/components/EditFlashcardDialog';
 import { DeleteFlashcardDialog } from '@/components/DeleteFlashcardDialog';
 import { CreateFlashcardDialog } from '@/components/CreateFlashcardDialog';
 import { ProgressBar } from '@/components/ProgressBar';
-import { Button } from '@/components/ui/button';
-import { Loader2, Save, Sparkles, Plus } from 'lucide-react';
+import { GenerateButton } from '@/components/GenerateButton';
+import { CreateFlashcardButton } from '@/components/CreateFlashcardButton';
+import { BulkSaveButton } from '@/components/BulkSaveButton';
 
 interface AIGenerationViewModel {
 	sourceText: string;
@@ -375,63 +376,25 @@ export function AIGenerationView() {
 					</div>
 
 					<div className="mt-6 flex flex-col gap-4 sm:flex-row">
-						<Button
+						<GenerateButton
 							onClick={handleGenerate}
-							disabled={
+							isLoading={viewModel.isLoading}
+							isDisabled={
 								viewModel.sourceText.length < 1000 ||
-								viewModel.sourceText.length > 10000 ||
-								viewModel.isLoading
+								viewModel.sourceText.length > 10000
 							}
-							className="rounded-lg border-[1.5px] border-[#222222] bg-[#FF385C] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:border-[#E31C5F] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
-						>
-							{viewModel.isLoading ? (
-								<>
-									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									<span className="animate-pulse">
-										Generowanie...
-									</span>
-								</>
-							) : (
-								<>
-									<Sparkles className="mr-2 h-4 w-4 animate-[wiggle_1s_ease-in-out_infinite]" />
-									Generuj fiszki
-								</>
-							)}
-						</Button>
+						/>
 
-						<Button
+						<CreateFlashcardButton
 							onClick={() => setIsCreatingFlashcard(true)}
-							className="rounded-lg border-[1.5px] border-[#222222] bg-[#222222] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:border-black hover:bg-black active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 dark:bg-white dark:text-[#222222] dark:hover:border-[#f5f5f5] dark:hover:bg-[#f5f5f5]"
-						>
-							<Plus className="mr-2 h-4 w-4" />
-							Dodaj fiszkę
-						</Button>
+						/>
 
 						{viewModel.acceptedFlashcards.length > 0 && (
-							<Button
-								onClick={handleBulkSave}
-								disabled={isSaving}
-								className="rounded-lg border-[1.5px] border-[#222222] bg-[#222222] px-6 py-2 font-medium text-white transition-all duration-200 hover:scale-[1.02] hover:border-black hover:bg-black active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 dark:bg-white dark:text-[#222222] dark:hover:border-[#f5f5f5] dark:hover:bg-[#f5f5f5]"
-							>
-								{isSaving ? (
-									<>
-										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										<span className="animate-pulse">
-											Zapisywanie...
-										</span>
-									</>
-								) : (
-									<>
-										<Save className="mr-2 h-4 w-4 animate-bounce" />
-										Zapisz {viewModel.acceptedFlashcards.length}{' '}
-										{viewModel.acceptedFlashcards.length === 1
-											? 'fiszkę'
-											: viewModel.acceptedFlashcards.length < 5
-												? 'fiszki'
-												: 'fiszek'}
-									</>
-								)}
-							</Button>
+							<BulkSaveButton
+								onSave={handleBulkSave}
+								isLoading={isSaving}
+								flashcardsCount={viewModel.acceptedFlashcards.length}
+							/>
 						)}
 					</div>
 				</div>

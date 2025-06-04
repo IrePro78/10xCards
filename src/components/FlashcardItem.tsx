@@ -54,7 +54,7 @@ export function FlashcardItem({
 						onClick={() =>
 							onReject(flashcard as GenerationCandidateDto)
 						}
-						className="h-8 w-8 rounded-full border-[1.5px] border-[#484848] bg-white text-[#484848] transition-all duration-200 hover:scale-[1.02] hover:border-[#484848] hover:bg-[#484848]/10 active:scale-[0.98]"
+						className="bg-background dark:bg-background h-8 w-8 rounded-full border-[1.5px] border-[#484848] text-[#484848] transition-all duration-200 hover:scale-[1.02] hover:border-[#484848] hover:bg-[#484848]/10 active:scale-[0.98]"
 					>
 						<RotateCcw className="h-4 w-4" />
 					</Button>
@@ -68,7 +68,7 @@ export function FlashcardItem({
 								onClick={() =>
 									onReject(flashcard as GenerationCandidateDto)
 								}
-								className="h-8 w-8 rounded-full border-[1.5px] border-[#FF385C] bg-white text-[#FF385C] transition-all duration-200 hover:scale-[1.02] hover:border-[#FF385C] hover:bg-[#FF385C]/10 active:scale-[0.98]"
+								className="bg-background dark:bg-background h-8 w-8 rounded-full border-[1.5px] border-[#FF385C] text-[#FF385C] transition-all duration-200 hover:scale-[1.02] hover:border-[#FF385C] hover:bg-[#FF385C]/10 active:scale-[0.98]"
 							>
 								<X className="h-4 w-4" />
 							</Button>
@@ -78,7 +78,7 @@ export function FlashcardItem({
 								variant="outline"
 								size="icon"
 								onClick={() => onEdit(flashcard)}
-								className="h-8 w-8 rounded-lg border-[1.5px] border-[#484848] bg-white text-[#484848] transition-all duration-200 hover:scale-[1.02] hover:border-[#484848] hover:bg-[#484848]/10 active:scale-[0.98]"
+								className="bg-background dark:bg-background h-8 w-8 rounded-lg border-[1.5px] border-[#484848] text-[#484848] transition-all duration-200 hover:scale-[1.02] hover:border-[#484848] hover:bg-[#484848]/10 active:scale-[0.98]"
 							>
 								<Pencil className="h-4 w-4" />
 							</Button>
@@ -90,7 +90,7 @@ export function FlashcardItem({
 								onClick={() =>
 									onAccept(flashcard as GenerationCandidateDto)
 								}
-								className="h-8 w-8 rounded-lg border-[1.5px] border-[#00A699] bg-white text-[#00A699] transition-all duration-200 hover:scale-[1.02] hover:border-[#00A699] hover:bg-[#00A699]/10 active:scale-[0.98]"
+								className="bg-background dark:bg-background h-8 w-8 rounded-lg border-[1.5px] border-[#00A699] text-[#00A699] transition-all duration-200 hover:scale-[1.02] hover:border-[#00A699] hover:bg-[#00A699]/10 active:scale-[0.98]"
 							>
 								<Check className="h-4 w-4" />
 							</Button>
@@ -104,7 +104,7 @@ export function FlashcardItem({
 								variant="outline"
 								size="icon"
 								onClick={() => onEdit(flashcard)}
-								className="h-8 w-8 rounded-lg border-[1.5px] border-[#484848] bg-white text-[#484848] transition-all duration-200 hover:scale-[1.02] hover:border-[#484848] hover:bg-[#484848]/10 active:scale-[0.98]"
+								className="bg-background dark:bg-background h-8 w-8 rounded-lg border-[1.5px] border-[#484848] text-[#484848] transition-all duration-200 hover:scale-[1.02] hover:border-[#484848] hover:bg-[#484848]/10 active:scale-[0.98]"
 							>
 								<Pencil className="h-4 w-4" />
 							</Button>
@@ -116,7 +116,7 @@ export function FlashcardItem({
 								onClick={() =>
 									onDelete(flashcard as FlashcardListDto)
 								}
-								className="h-8 w-8 rounded-lg border-[1.5px] border-[#FF385C] bg-white text-[#FF385C] transition-all duration-200 hover:scale-[1.02] hover:border-[#FF385C] hover:bg-[#FF385C]/10 active:scale-[0.98]"
+								className="bg-background dark:bg-background h-8 w-8 rounded-lg border-[1.5px] border-[#FF385C] text-[#FF385C] transition-all duration-200 hover:scale-[1.02] hover:border-[#FF385C] hover:bg-[#FF385C]/10 active:scale-[0.98]"
 							>
 								<Trash2 className="h-4 w-4" />
 							</Button>

@@ -10,8 +10,11 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from '@/components/ui/avatar';
 import Link from 'next/link';
 import { logout } from '@/actions/auth';
 
@@ -63,26 +66,33 @@ export function MainNav({ email }: MainNavProps) {
 				</div>
 				{email ? (
 					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button
-								variant="ghost"
-								className="relative h-8 w-8 rounded-full"
-							>
-								<Avatar className="h-8 w-8">
-									<AvatarFallback>
-										{email[0].toUpperCase()}
-									</AvatarFallback>
-								</Avatar>
-							</Button>
+						<DropdownMenuTrigger>
+							<Avatar className="h-8 w-8 cursor-pointer">
+								<AvatarImage
+									src={`https://api.dicebear.com/7.x/initials/svg?seed=${email}`}
+									alt={email}
+								/>
+								<AvatarFallback>
+									{email[0].toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
+						<DropdownMenuContent align="end" className="w-56">
+							<div className="flex items-center justify-start gap-2 p-2">
+								<div className="flex flex-col space-y-1 leading-none">
+									<p className="text-sm font-medium">{email}</p>
+								</div>
+							</div>
 							<DropdownMenuItem asChild>
-								<Link href="/profile" className="flex items-center">
+								<Link href="/profile" className="w-full">
 									<User className="mr-2 h-4 w-4" />
 									Profil
 								</Link>
 							</DropdownMenuItem>
-							<DropdownMenuItem onClick={() => logout()}>
+							<DropdownMenuItem
+								onClick={() => logout()}
+								className="text-red-600 focus:text-red-600"
+							>
 								<LogOut className="mr-2 h-4 w-4" />
 								Wyloguj się
 							</DropdownMenuItem>

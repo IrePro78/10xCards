@@ -3,6 +3,7 @@
 import { createSupabaseServerClient } from '@/db/supabase.server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
 // Rate limiting
 const RATE_LIMIT = {
@@ -73,5 +74,27 @@ export async function login(formData: FormData) {
 	// Reset licznika prób po udanym logowaniu
 	loginAttempts.delete(ipAddress);
 
+	revalidatePath('/', 'layout');
 	redirect('/generate');
+}
+
+export async function logout() {
+	const supabase = await createSupabaseServerClient();
+
+	const { error } = await supabase.auth.signOut();
+
+	if (error) {
+		return { error: 'Wystąpił błąd podczas wylogowywania' };
+	}
+
+	revalidatePath('/', 'layout');
+	redirect('/login');
+}
+
+export async function getUser() {
+	const supabase = await createSupabaseServerClient();
+	const {
+		data: { user },
+	} = await supabase.auth.getUser();
+	return { user };
 }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { MainNav } from '@/components/MainNav';
+import { getUser } from './actions/auth';
 
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -28,11 +29,13 @@ export const metadata: Metadata = {
 	description: 'Aplikacja do generowania fiszek z tekstu',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const { user } = await getUser();
+
 	return (
 		<html lang="pl" suppressHydrationWarning>
 			<body
@@ -51,7 +54,7 @@ export default function RootLayout({
 								<h1 className="text-2xl font-bold">10xCards</h1>
 								<ThemeToggle />
 							</div>
-							<MainNav />
+							<MainNav email={user?.email} />
 						</header>
 
 						<main className="flashcard-container rounded-xl p-6">

@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import {
-	createServerClient,
-	type CookieOptions,
-} from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 
 const PUBLIC_PATHS = [
 	'/login',
@@ -13,28 +10,45 @@ const PUBLIC_PATHS = [
 ];
 
 export async function middleware(request: NextRequest) {
-	const response = NextResponse.next();
-	response.headers.set('x-middleware-cache', 'no-cache');
-
+	let supabaseResponse = NextResponse.next({
+		request,
+	});
 	const supabase = createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 		{
 			cookies: {
-				get(name: string) {
-					return request.cookies.get(name)?.value;
+				getAll() {
+					return request.cookies.getAll();
 				},
-				set(name: string, value: string, options: CookieOptions) {
-					request.cookies.set({ name, value, ...options });
-					response.cookies.set({ name, value, ...options });
-				},
-				remove(name: string, options: CookieOptions) {
-					request.cookies.set({ name, value: '', ...options });
-					response.cookies.set({ name, value: '', ...options });
+				setAll(cookiesToSet) {
+					cookiesToSet.forEach(({ name, value }) =>
+						request.cookies.set(name, value),
+					);
+					supabaseResponse = NextResponse.next({
+						request,
+					});
+					cookiesToSet.forEach(({ name, value, options }) =>
+						supabaseResponse.cookies.set(name, value, options),
+					);
 				},
 			},
 		},
 	);
+
+	// const {
+	// 	data: { user },
+	// } = await supabase.auth.getUser();
+	// if (
+	// 	!user &&
+	// 	!request.nextUrl.pathname.startsWith('/login') &&
+	// 	!request.nextUrl.pathname.startsWith('/auth')
+	// ) {
+	// 	// no user, potentially respond by redirecting the user to the login page
+	// 	const url = request.nextUrl.clone();
+	// 	url.pathname = '/login';
+	// 	return NextResponse.redirect(url);
+	// }
 
 	const {
 		data: { user },
@@ -49,8 +63,7 @@ export async function middleware(request: NextRequest) {
 	if (user && PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
 		return NextResponse.redirect(new URL('/generate', request.url));
 	}
-
-	return response;
+	return supabaseResponse;
 }
 
 // Definiuje na jakich ścieżkach middleware będzie uruchamiany

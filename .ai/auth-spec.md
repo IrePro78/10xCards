@@ -46,7 +46,7 @@ Komponenty te będą zlokalizowane w `src/components/auth/` i zbudowane przy uż
 
 #### 1.2.2. Modyfikacje Istniejących Komponentów/Layoutów
 
-- **Główny Layout (np. `app/layout.tsx`) lub Komponent Nawigacji Głównej (np. `src/components/layout/MainNav.tsx`):**
+- **Główny Layout (np. `app/layout.tsx`) lub Komponent Nawigacji Głównej (np. `src/components/MainNav.tsx`):**
   - **Stan niezalogowany:**
     - Wyświetlanie przycisków/linków: "Zaloguj się" (do `/login`) i "Zarejestruj się" (do `/register`).
   - **Stan zalogowany:**
@@ -96,7 +96,7 @@ Logika backendowa będzie implementowana głównie przy użyciu Next.js Server A
 
 ### 2.1. Struktura Endpointów API (Server Actions)
 
-Zostaną zdefiniowane w plikach `actions/*.ts` (np. `src/actions/auth.ts`).
+Zostaną zdefiniowane w plikach `actions/*.ts` (np. `app/actions/auth.ts`).
 
 - `async function register(formData: FormData): Promise<ActionResult>`
 - `async function login(formData: FormData): Promise<ActionResult>`
@@ -123,9 +123,11 @@ Gdzie `ActionResult` to typ opisujący wynik operacji, np. `{ success: boolean; 
 - **Dostęp do sesji użytkownika:** W Server Components oraz Server Actions, sesja użytkownika będzie pobierana przy użyciu serwerowego klienta Supabase (`@supabase/ssr`).
   ```typescript
   // Przykład w Server Component lub Server Action
-  import { createClient } from '@/lib/supabase/server'; // Założenie istnienia takiego helpera
+  import { createClient } from '@/src/db/supabase.server'; // Założenie istnienia takiego helpera
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+  	data: { user },
+  } = await supabase.auth.getUser();
   ```
 - **Ochrona tras:** Komponenty serwerowe odpowiedzialne za renderowanie stron wymagających autentykacji (np. edycja fiszek) będą sprawdzać obecność `user`. Jeśli użytkownik nie jest zalogowany, nastąpi przekierowanie do `/login` przy użyciu `redirect` z `next/navigation`.
 - Strony takie jak `/login` i `/register` będą przekierowywać zalogowanych użytkowników na stronę główną.
@@ -158,40 +160,86 @@ Gdzie `ActionResult` to typ opisujący wynik operacji, np. `{ success: boolean; 
 - Biblioteka `@supabase/ssr` będzie używana do zarządzania sesją użytkownika poprzez cookies. Helper `createClient` (z `lib/supabase/server.ts` i `lib/supabase/client.ts`) ułatwi tworzenie instancji klienta Supabase odpowiednio dla kontekstu serwerowego i klienckiego.
 - Middleware (`src/middleware.ts`) będzie odpowiedzialny za odświeżanie sesji Supabase przy każdym żądaniu, używając klienta Supabase SSR.
 
-  ```typescript
-  // src/middleware.ts (uproszczony przykład)
-  import { createServerClient, type CookieOptions } from '@supabase/ssr';
-  import { NextResponse, type NextRequest } from 'next/server';
+```typescript
+  // src/middleware/index.ts (uproszczony przykład)
+  import { NextResponse } from 'next/server';
+  import type { NextRequest } from 'next/server';
+  import { createServerClient } from '@supabase/ssr';
 
-  export async function middleware(request: NextRequest) {
-    let response = NextResponse.next({
-      request: { headers: request.headers },
-    });
+const PUBLIC_PATHS = [
+'/login',
+'/register',
+'/forgot-password',
+'/reset-password',
+];
+
+export async function middleware(request: NextRequest) {
+// Tworzymy nową odpowiedź z przekazanym requestem
+let response = NextResponse.next({
+request,
+});
+
+    response.headers.set('x-middleware-cache', 'no-cache');
 
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get: (name) => request.cookies.get(name)?.value,
-          set: (name, value, options) => response.cookies.set({ name, value, ...options }),
-          remove: (name, options) => response.cookies.delete({ name, ...options }),
-        },
-      }
+    	process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    	process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    	{
+    		cookies: {
+    			getAll() {
+    				return request.cookies.getAll();
+    			},
+    			setAll(cookiesToSet) {
+    				cookiesToSet.forEach(({ name, value, options }) =>
+    					request.cookies.set(name, value),
+    				);
+    				response = NextResponse.next({
+    					request,
+    				});
+    				response.headers.set('x-middleware-cache', 'no-cache');
+    				cookiesToSet.forEach(({ name, value, options }) =>
+    					response.cookies.set(name, value, options),
+    				);
+    			},
+    		},
+    	},
     );
 
-    // Odświeżenie sesji użytkownika
-    await supabase.auth.getUser();
+    // WAŻNE: Nie umieszczaj kodu między createServerClient a supabase.auth.getUser()
+    // Prosty błąd może spowodować trudne do debugowania problemy z losowym wylogowywaniem użytkowników
 
+    const {
+    	data: { user },
+    } = await supabase.auth.getUser();
+
+    // Jeśli użytkownik nie jest zalogowany i próbuje dostać się do chronionej ścieżki
+    if (!user && !PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
+    	return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // Jeśli użytkownik jest zalogowany i próbuje dostać się do strony logowania/rejestracji
+    if (user && PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
+    	return NextResponse.redirect(new URL('/generate', request.url));
+    }
+
+    // WAŻNE: Zwracamy response z zachowanymi ciasteczkami
     return response;
-  }
 
-  export const config = {
-    matcher: [
-      /* Dopasuj wszystkie ścieżki żądań oprócz tych zaczynających się od: ... (jak w dokumentacji Supabase) */
-      '/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+}
+
+export const config = {
+matcher: [
+/\*
+
+- Dopasuj wszystkie ścieżki żądań z wyjątkiem tych zaczynających się od:
+- - \_next/static (pliki statyczne)
+- - \_next/image (pliki optymalizacji obrazów)
+- - favicon.ico (plik favicon)
+- - ._\\.(?:svg|png|jpg|jpeg|gif|webp)$ (pliki graficzne)
+    _/
+    '/((?!\_next/static|\_next/image|favicon.ico|._\\.(?:svg|png|jpg|jpeg|gif|webp)$)._)',
     ],
-  };
-  ```
+    };
+```
 
 Kluczowe jest, aby `supabase.auth.getUser()` było wywoływane w middleware, aby sesja była aktualna i dostępna dla Server Components i Route Handlers poprzez cookies.

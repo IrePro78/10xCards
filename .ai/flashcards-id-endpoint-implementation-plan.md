@@ -55,12 +55,12 @@ Wszystkie metody wymagają autentykacji użytkownika i weryfikacji własności z
 ```typescript
 // Odpowiedź dla DELETE
 export type DeleteFlashcardResponseDto = {
-  message: string;
+	message: string;
 };
 
 // Typ dla walidacji parametru id
 export type FlashcardIdParams = {
-  id: string;
+	id: string;
 };
 ```
 

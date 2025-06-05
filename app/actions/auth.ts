@@ -1,7 +1,8 @@
+'use server';
+
 import { createSupabaseServerClient } from '@/db/supabase.server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { toast } from 'sonner';
 
 // Rate limiting
 const RATE_LIMIT = {
@@ -59,16 +60,10 @@ export async function login(formData: FormData) {
 		});
 
 		if (error.message === 'Email not confirmed') {
-			toast.error(
-				'Konto nie zostało potwierdzone. Sprawdź swoją skrzynkę email.',
-			);
 			return { error: 'Konto nie zostało potwierdzone' };
 		}
 
 		if (error.message === 'Account disabled') {
-			toast.error(
-				'Konto zostało zablokowane. Skontaktuj się z administratorem.',
-			);
 			return { error: 'Konto zablokowane' };
 		}
 
@@ -78,6 +73,5 @@ export async function login(formData: FormData) {
 	// Reset licznika prób po udanym logowaniu
 	loginAttempts.delete(ipAddress);
 
-	toast.success('Zalogowano pomyślnie!');
 	redirect('/generate');
 }

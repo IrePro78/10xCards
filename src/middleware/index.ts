@@ -9,10 +9,16 @@ const PUBLIC_PATHS = [
 	'/reset-password',
 ];
 
+const PROTECTED_PATHS = ['/generate', '/flashcards', '/profile'];
+
 export async function middleware(request: NextRequest) {
 	let supabaseResponse = NextResponse.next({
 		request,
 	});
+
+	// Dodaj nagłówek no-cache dla lepszego debugowania
+	supabaseResponse.headers.set('x-middleware-cache', 'no-cache');
+
 	const supabase = createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -28,6 +34,10 @@ export async function middleware(request: NextRequest) {
 					supabaseResponse = NextResponse.next({
 						request,
 					});
+					supabaseResponse.headers.set(
+						'x-middleware-cache',
+						'no-cache',
+					);
 					cookiesToSet.forEach(({ name, value, options }) =>
 						supabaseResponse.cookies.set(name, value, options),
 					);
@@ -36,40 +46,41 @@ export async function middleware(request: NextRequest) {
 		},
 	);
 
-	// const {
-	// 	data: { user },
-	// } = await supabase.auth.getUser();
-	// if (
-	// 	!user &&
-	// 	!request.nextUrl.pathname.startsWith('/login') &&
-	// 	!request.nextUrl.pathname.startsWith('/auth')
-	// ) {
-	// 	// no user, potentially respond by redirecting the user to the login page
-	// 	const url = request.nextUrl.clone();
-	// 	url.pathname = '/login';
-	// 	return NextResponse.redirect(url);
-	// }
-
 	const {
 		data: { user },
 	} = await supabase.auth.getUser();
 
+	const pathname = request.nextUrl.pathname;
+
+	// Sprawdź czy ścieżka jest chroniona
+	const isProtectedPath = PROTECTED_PATHS.some((path) =>
+		pathname.startsWith(path),
+	);
+
 	// Jeśli użytkownik nie jest zalogowany i próbuje dostać się do chronionej ścieżki
-	if (!user && !PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
+	if (!user && isProtectedPath) {
+		console.log(`Unauthorized access attempt to ${pathname}`);
 		return NextResponse.redirect(new URL('/login', request.url));
 	}
 
 	// Jeśli użytkownik jest zalogowany i próbuje dostać się do strony logowania/rejestracji
-	if (user && PUBLIC_PATHS.includes(request.nextUrl.pathname)) {
+	if (user && PUBLIC_PATHS.includes(pathname)) {
 		return NextResponse.redirect(new URL('/generate', request.url));
 	}
+
 	return supabaseResponse;
 }
 
 // Definiuje na jakich ścieżkach middleware będzie uruchamiany
 export const config = {
 	matcher: [
-		// Wyklucza statyczne zasoby
-		'/((?!_next/static|_next/image|favicon.ico).*)',
+		/*
+		 * Dopasuj wszystkie ścieżki żądań z wyjątkiem tych zaczynających się od:
+		 * - _next/static (pliki statyczne)
+		 * - _next/image (pliki optymalizacji obrazów)
+		 * - favicon.ico (plik favicon)
+		 * - pliki graficzne
+		 */
+		'/((?!_next/static|_next/image|favicon.ico|.*\\.(svg|png|jpg|jpeg|gif|webp)$).*)',
 	],
 };

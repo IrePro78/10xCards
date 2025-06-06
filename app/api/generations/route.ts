@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-	DEFAULT_USER_ID,
-	supabaseClient,
-} from '@/db/supabase.client';
+import { supabaseClient } from '@/db/supabase.client';
 import { GenerationsService } from '@/lib/generations.service';
 import { OpenRouterService } from '@/lib/openrouter.service';
 
@@ -46,7 +43,15 @@ export async function POST(request: NextRequest) {
 		const { source_text, model } = validationResult.data;
 
 		// 2. Użycie domyślnego id użytkownika na potrzeby developmentu
-		const user_id = DEFAULT_USER_ID;
+		const {
+			data: { user },
+		} = await supabaseClient.auth.getUser();
+		if (!user) {
+			return NextResponse.json(
+				{ error: 'Unauthorized' },
+				{ status: 401 },
+			);
+		}
 
 		// 3. Inicjalizacja serwisów
 		const openRouterService = new OpenRouterService();
@@ -58,7 +63,7 @@ export async function POST(request: NextRequest) {
 		// 4. Użycie serwisu do utworzenia generacji
 		const generationWithCandidates =
 			await generationsService.createGeneration(
-				user_id,
+				user.id,
 				source_text,
 				model,
 			);

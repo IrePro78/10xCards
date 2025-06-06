@@ -4,12 +4,8 @@ import type {
 	CreateFlashcardsResponseDto,
 	FlashcardsQueryParams,
 } from '@/types/types';
-import {
-	DEFAULT_USER_ID,
-	supabaseClient,
-} from '@/db/supabase.client';
-
-import { FlashcardsService } from '@/lib/flashcards.service';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { flashcardsService } from '@/lib/flashcards.service';
 
 // Schema walidacji dla pojedynczej fiszki
@@ -32,6 +28,34 @@ const createFlashcardsSchema = z.object({
 
 export async function POST(request: Request) {
 	try {
+		const cookieStore = await cookies();
+		const supabase = createServerClient(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+			{
+				cookies: {
+					getAll() {
+						return cookieStore.getAll();
+					},
+					setAll(cookiesToSet) {
+						cookiesToSet.forEach(({ name, value, options }) =>
+							cookieStore.set(name, value, options),
+						);
+					},
+				},
+			},
+		);
+
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+		if (!user) {
+			return NextResponse.json(
+				{ error: 'Unauthorized' },
+				{ status: 401 },
+			);
+		}
+
 		// Parsowanie body żądania
 		const body = await request.json();
 
@@ -48,13 +72,10 @@ export async function POST(request: Request) {
 			);
 		}
 
-		// Inicjalizacja serwisu
-		const flashcardsService = new FlashcardsService(supabaseClient);
-
 		// Tworzenie fiszek
 		const createdFlashcards =
 			await flashcardsService.createFlashcards(
-				DEFAULT_USER_ID,
+				user.id,
 				validationResult.data.flashcards,
 			);
 
@@ -75,17 +96,35 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
 	try {
-		// Pobierz user_id z kontekstu (dodane przez middleware)
-		// const userId = request.headers.get('x-user-id');
-		const userId = DEFAULT_USER_ID;
-		if (!userId) {
+		const cookieStore = await cookies();
+		const supabase = createServerClient(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+			{
+				cookies: {
+					getAll() {
+						return cookieStore.getAll();
+					},
+					setAll(cookiesToSet) {
+						cookiesToSet.forEach(({ name, value, options }) =>
+							cookieStore.set(name, value, options),
+						);
+					},
+				},
+			},
+		);
+
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+		if (!user) {
 			return NextResponse.json(
 				{ error: 'Unauthorized' },
 				{ status: 401 },
 			);
 		}
 
-		// Pobierz parametry z URL jako stringi (schema w serwisie je sparsuje)
+		// Pobierz parametry z URL jako stringi
 		const url = new URL(request.url);
 		const params: FlashcardsQueryParams = {
 			page: url.searchParams.get('page') ?? undefined,
@@ -99,7 +138,7 @@ export async function GET(request: Request) {
 
 		// Pobierz fiszki
 		const response = await flashcardsService.getFlashcards(
-			userId,
+			user.id,
 			params,
 		);
 

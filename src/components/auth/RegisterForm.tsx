@@ -5,6 +5,23 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { register } from '@/actions/auth';
+import { toast } from 'sonner';
+
+function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
+	return (
+		<Button
+			disabled={isSubmitting}
+			className="h-12 w-full rounded-lg bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50"
+		>
+			{isSubmitting ? (
+				<div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+			) : (
+				'Zarejestruj się'
+			)}
+		</Button>
+	);
+}
 
 interface ValidationErrors {
 	email?: string;
@@ -68,7 +85,6 @@ export function RegisterForm() {
 			[name]: error,
 		}));
 
-		// Dodatkowo sprawdzamy potwierdzenie hasła przy zmianie hasła
 		if (name === 'password' && formData.confirmPassword) {
 			const confirmError = validateField(
 				'confirmPassword',
@@ -78,6 +94,42 @@ export function RegisterForm() {
 				...prev,
 				confirmPassword: confirmError,
 			}));
+		}
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+
+		if (!isFormValid) return;
+
+		setIsLoading(true);
+
+		try {
+			const formDataToSend = new FormData();
+			formDataToSend.append('email', formData.email);
+			formDataToSend.append('password', formData.password);
+
+			const result = await register(formDataToSend);
+
+			if (result?.error) {
+				console.error('Błąd z serwera:', result.error);
+				toast.error(result.error);
+			} else if (result?.success) {
+				toast.success(
+					'Link aktywacyjny został wysłany na Twój adres email. Sprawdź swoją skrzynkę odbiorczą.',
+				);
+				// Dajemy czas na pokazanie toasta przed przekierowaniem
+				setTimeout(() => {
+					window.location.href = '/login';
+				}, 2000);
+			}
+		} catch (err) {
+			console.error('Błąd podczas wysyłania formularza:', err);
+			toast.error(
+				'Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.',
+			);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -98,7 +150,7 @@ export function RegisterForm() {
 				</p>
 			</div>
 
-			<div className="space-y-4">
+			<form onSubmit={handleSubmit} className="space-y-4">
 				<div className="space-y-2">
 					<Label htmlFor="email">Adres email</Label>
 					<Input
@@ -160,16 +212,7 @@ export function RegisterForm() {
 					)}
 				</div>
 
-				<Button
-					disabled={!isFormValid || isLoading}
-					className="h-12 w-full rounded-lg bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50"
-				>
-					{isLoading ? (
-						<div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-					) : (
-						'Zarejestruj się'
-					)}
-				</Button>
+				<SubmitButton isSubmitting={isLoading} />
 
 				<div className="text-muted-foreground text-center text-sm">
 					Masz już konto?{' '}
@@ -180,7 +223,7 @@ export function RegisterForm() {
 						Zaloguj się
 					</Link>
 				</div>
-			</div>
+			</form>
 		</div>
 	);
 }

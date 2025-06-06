@@ -9,16 +9,8 @@ import {
 	updateFlashcard,
 	deleteFlashcard,
 } from '@/lib/flashcards.service';
-import {
-	DEFAULT_USER_ID,
-	supabaseClient,
-} from '@/db/supabase.client';
-
-/**
- * UWAGA: Tymczasowo używamy DEFAULT_USER_ID do autoryzacji.
- * Docelowo będzie to zastąpione prawdziwą autoryzacją użytkownika
- * poprzez middleware i context.
- */
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 // Schema dla walidacji UUID
 const idSchema = z.string().uuid();
@@ -42,6 +34,34 @@ export async function PUT(
 	{ params }: { params: FlashcardIdParams },
 ) {
 	try {
+		const cookieStore = await cookies();
+		const supabase = createServerClient(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+			{
+				cookies: {
+					getAll() {
+						return cookieStore.getAll();
+					},
+					setAll(cookiesToSet) {
+						cookiesToSet.forEach(({ name, value, options }) =>
+							cookieStore.set(name, value, options),
+						);
+					},
+				},
+			},
+		);
+
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+		if (!user) {
+			return NextResponse.json(
+				{ error: 'Unauthorized' },
+				{ status: 401 },
+			);
+		}
+
 		// Walidacja ID
 		const { id } = await params;
 		const validatedId = idSchema.parse(id);
@@ -52,10 +72,10 @@ export async function PUT(
 
 		// Aktualizacja fiszki
 		const updatedFlashcard = await updateFlashcard(
-			supabaseClient,
+			supabase,
 			validatedId,
 			validatedBody,
-			DEFAULT_USER_ID,
+			user.id,
 		);
 
 		// Przygotowanie odpowiedzi
@@ -102,16 +122,40 @@ export async function DELETE(
 	{ params }: { params: FlashcardIdParams },
 ) {
 	try {
+		const cookieStore = await cookies();
+		const supabase = createServerClient(
+			process.env.NEXT_PUBLIC_SUPABASE_URL!,
+			process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+			{
+				cookies: {
+					getAll() {
+						return cookieStore.getAll();
+					},
+					setAll(cookiesToSet) {
+						cookiesToSet.forEach(({ name, value, options }) =>
+							cookieStore.set(name, value, options),
+						);
+					},
+				},
+			},
+		);
+
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+		if (!user) {
+			return NextResponse.json(
+				{ error: 'Unauthorized' },
+				{ status: 401 },
+			);
+		}
+
 		// Walidacja ID
 		const { id } = await params;
 		const validatedId = idSchema.parse(id);
 
 		// Usunięcie fiszki
-		await deleteFlashcard(
-			supabaseClient,
-			validatedId,
-			DEFAULT_USER_ID,
-		);
+		await deleteFlashcard(supabase, validatedId, user.id);
 
 		const response: DeleteFlashcardResponseDto = {
 			message: 'Flashcard deleted successfully.',

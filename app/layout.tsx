@@ -40,7 +40,7 @@ export default async function RootLayout({
 		<html lang="pl" suppressHydrationWarning>
 			<body
 				className={cn(
-					'min-h-screen bg-[#F7F7F7] font-sans antialiased',
+					'min-h-screen font-sans antialiased',
 					geistSans.variable,
 					geistMono.variable,
 					inter.className,
@@ -50,8 +50,7 @@ export default async function RootLayout({
 				<Providers>
 					<div className="mx-auto max-w-7xl p-4 md:p-6 2xl:p-8">
 						<header className="flashcard-container mb-8 rounded-xl p-6">
-							<div className="mb-4 flex items-center justify-between">
-								<h1 className="text-2xl font-bold">10xCards</h1>
+							<div className="mb-4 flex items-center justify-end">
 								<ThemeToggle />
 							</div>
 							<MainNav email={user?.email} />

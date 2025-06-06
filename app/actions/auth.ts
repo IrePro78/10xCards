@@ -98,3 +98,49 @@ export async function getUser() {
 	} = await supabase.auth.getUser();
 	return { user };
 }
+
+export async function register(formData: FormData) {
+	const email = formData.get('email') as string;
+	const password = formData.get('password') as string;
+
+	const supabase = await createSupabaseServerClient();
+
+	try {
+		const { error } = await supabase.auth.signUp({
+			email,
+			password,
+			options: {
+				emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+			},
+		});
+
+		if (error) {
+			console.error('Błąd rejestracji Supabase:', error);
+
+			// Mapowanie komunikatów błędów na przyjazne dla użytkownika wersje
+			if (error.message.includes('already registered')) {
+				return { error: 'Ten adres email jest już zarejestrowany' };
+			}
+			if (error.message.includes('invalid email')) {
+				return { error: 'Nieprawidłowy format adresu email' };
+			}
+			if (error.message.includes('password')) {
+				return { error: 'Hasło nie spełnia wymagań bezpieczeństwa' };
+			}
+
+			return { error: error.message };
+		}
+
+		// W środowisku lokalnym, emaile można sprawdzić pod adresem:
+		// http://localhost:54324 (Inbucket - lokalny serwer testowy email)
+
+		revalidatePath('/', 'layout');
+		return { success: true };
+	} catch (err) {
+		console.error('Nieoczekiwany błąd podczas rejestracji:', err);
+		return {
+			error:
+				'Wystąpił błąd podczas rejestracji. Spróbuj ponownie później.',
+		};
+	}
+}

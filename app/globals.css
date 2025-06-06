@@ -33,6 +33,14 @@
 	/* Modal inputs */
 	--modal-input-background: #ffffff;
 	--modal-input-foreground: #1a1a1a;
+
+	/* Gradient */
+	--gradient-from: #000000;
+	--gradient-via: #18181b;
+	--gradient-to: #27272a;
+	--gradient-hover-from: #000000;
+	--gradient-hover-via: #000000;
+	--gradient-hover-to: #18181b;
 }
 
 body {
@@ -145,6 +153,14 @@ body {
 	/* Modal inputs */
 	--modal-input-background: #262626;
 	--modal-input-foreground: #b60909;
+
+	/* Gradient */
+	--gradient-from: #ffffff;
+	--gradient-via: #f4f4f5;
+	--gradient-to: #e4e4e7;
+	--gradient-hover-from: #ffffff;
+	--gradient-hover-via: #ffffff;
+	--gradient-hover-to: #f4f4f5;
 }
 
 /* Style dla modali w trybie ciemnym */

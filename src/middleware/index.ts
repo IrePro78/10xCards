@@ -7,17 +7,39 @@ const PUBLIC_PATHS = [
 	'/register',
 	'/forgot-password',
 	'/reset-password',
+	'/auth/callback',
 ];
 
 const PROTECTED_PATHS = ['/generate', '/flashcards', '/profile'];
 
 export async function middleware(request: NextRequest) {
-	let supabaseResponse = NextResponse.next({
+	const requestUrl = new URL(request.url);
+	const code = requestUrl.searchParams.get('code');
+	const pathname = requestUrl.pathname;
+
+	// Obsługa przekierowania dla resetu hasła
+	if (code) {
+		if (pathname === '/reset-password') {
+			// Jeśli jesteśmy już na stronie reset-password, nie robimy przekierowania
+			console.log('Already on reset-password page');
+		} else {
+			// W przeciwnym razie przekierowujemy przez callback
+			console.log('Redirecting to auth callback');
+			return NextResponse.redirect(
+				new URL(
+					`/auth/callback?code=${code}&next=/reset-password`,
+					request.url,
+				),
+			);
+		}
+	}
+
+	// Tworzymy nową odpowiedź z przekazanym requestem
+	let response = NextResponse.next({
 		request,
 	});
 
-	// Dodaj nagłówek no-cache dla lepszego debugowania
-	supabaseResponse.headers.set('x-middleware-cache', 'no-cache');
+	response.headers.set('x-middleware-cache', 'no-cache');
 
 	const supabase = createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,15 +53,12 @@ export async function middleware(request: NextRequest) {
 					cookiesToSet.forEach(({ name, value }) =>
 						request.cookies.set(name, value),
 					);
-					supabaseResponse = NextResponse.next({
+					response = NextResponse.next({
 						request,
 					});
-					supabaseResponse.headers.set(
-						'x-middleware-cache',
-						'no-cache',
-					);
+					response.headers.set('x-middleware-cache', 'no-cache');
 					cookiesToSet.forEach(({ name, value, options }) =>
-						supabaseResponse.cookies.set(name, value, options),
+						response.cookies.set(name, value, options),
 					);
 				},
 			},
@@ -49,8 +68,6 @@ export async function middleware(request: NextRequest) {
 	const {
 		data: { user },
 	} = await supabase.auth.getUser();
-
-	const pathname = request.nextUrl.pathname;
 
 	// Sprawdź czy ścieżka jest chroniona
 	const isProtectedPath = PROTECTED_PATHS.some((path) =>
@@ -68,7 +85,7 @@ export async function middleware(request: NextRequest) {
 		return NextResponse.redirect(new URL('/generate', request.url));
 	}
 
-	return supabaseResponse;
+	return response;
 }
 
 // Definiuje na jakich ścieżkach middleware będzie uruchamiany
@@ -79,8 +96,8 @@ export const config = {
 		 * - _next/static (pliki statyczne)
 		 * - _next/image (pliki optymalizacji obrazów)
 		 * - favicon.ico (plik favicon)
-		 * - pliki graficzne
+		 * - .*\\.(?:svg|png|jpg|jpeg|gif|webp)$ (pliki graficzne)
 		 */
-		'/((?!_next/static|_next/image|favicon.ico|.*\\.(svg|png|jpg|jpeg|gif|webp)$).*)',
+		'/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
 	],
 };

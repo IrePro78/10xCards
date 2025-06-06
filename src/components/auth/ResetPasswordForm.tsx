@@ -5,6 +5,23 @@ import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { resetPassword } from '@/actions/auth';
+import { toast } from 'sonner';
+
+function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
+	return (
+		<Button
+			disabled={isSubmitting}
+			className="h-12 w-full rounded-lg bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50"
+		>
+			{isSubmitting ? (
+				<div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+			) : (
+				'Ustaw nowe hasło'
+			)}
+		</Button>
+	);
+}
 
 interface ValidationErrors {
 	password?: string;
@@ -61,7 +78,6 @@ export function ResetPasswordForm() {
 			[name]: error,
 		}));
 
-		// Dodatkowo sprawdzamy potwierdzenie hasła przy zmianie hasła
 		if (name === 'password' && formData.confirmPassword) {
 			const confirmError = validateField(
 				'confirmPassword',
@@ -71,6 +87,39 @@ export function ResetPasswordForm() {
 				...prev,
 				confirmPassword: confirmError,
 			}));
+		}
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+
+		if (!isFormValid) return;
+
+		setIsLoading(true);
+
+		try {
+			const formDataToSend = new FormData();
+			formDataToSend.append('password', formData.password);
+
+			const result = await resetPassword(formDataToSend);
+
+			if (result?.error) {
+				console.error('Błąd z serwera:', result.error);
+				toast.error(result.error);
+			} else if (result?.success) {
+				setIsSuccess(true);
+				toast.success('Hasło zostało pomyślnie zmienione');
+				setTimeout(() => {
+					window.location.href = '/login';
+				}, 2000);
+			}
+		} catch (err) {
+			console.error('Błąd podczas wysyłania formularza:', err);
+			toast.error(
+				'Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.',
+			);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -105,7 +154,7 @@ export function ResetPasswordForm() {
 					</Link>
 				</div>
 			) : (
-				<div className="space-y-4">
+				<form onSubmit={handleSubmit} className="space-y-4">
 					<div className="space-y-2">
 						<Label htmlFor="password">Nowe hasło</Label>
 						<Input
@@ -150,16 +199,7 @@ export function ResetPasswordForm() {
 						)}
 					</div>
 
-					<Button
-						disabled={!isFormValid || isLoading}
-						className="h-12 w-full rounded-lg bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50"
-					>
-						{isLoading ? (
-							<div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-						) : (
-							'Ustaw nowe hasło'
-						)}
-					</Button>
+					<SubmitButton isSubmitting={isLoading} />
 
 					<div className="text-muted-foreground text-center text-sm">
 						<Link
@@ -169,7 +209,7 @@ export function ResetPasswordForm() {
 							Powrót do logowania
 						</Link>
 					</div>
-				</div>
+				</form>
 			)}
 		</div>
 	);

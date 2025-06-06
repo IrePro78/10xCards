@@ -144,3 +144,84 @@ export async function register(formData: FormData) {
 		};
 	}
 }
+
+export async function resetPassword(formData: FormData) {
+	const password = formData.get('password') as string;
+
+	const supabase = await createSupabaseServerClient();
+
+	try {
+		const { error } = await supabase.auth.updateUser({
+			password: password,
+		});
+
+		if (error) {
+			console.error('Błąd resetowania hasła:', error);
+
+			// Mapowanie komunikatów błędów na przyjazne dla użytkownika wersje
+			if (error.message.includes('password')) {
+				return { error: 'Hasło nie spełnia wymagań bezpieczeństwa' };
+			}
+			if (error.message.includes('auth')) {
+				return {
+					error: 'Błąd autoryzacji. Spróbuj ponownie później.',
+				};
+			}
+
+			return { error: error.message };
+		}
+
+		revalidatePath('/', 'layout');
+		return { success: true };
+	} catch (err) {
+		console.error(
+			'Nieoczekiwany błąd podczas resetowania hasła:',
+			err,
+		);
+		return {
+			error:
+				'Wystąpił błąd podczas resetowania hasła. Spróbuj ponownie później.',
+		};
+	}
+}
+
+export async function forgotPassword(formData: FormData) {
+	const email = formData.get('email') as string;
+
+	const supabase = await createSupabaseServerClient();
+
+	try {
+		const { error } = await supabase.auth.resetPasswordForEmail(
+			email,
+			{
+				redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+			},
+		);
+
+		if (error) {
+			console.error('Błąd wysyłania linku resetującego:', error);
+
+			// Mapowanie komunikatów błędów na przyjazne dla użytkownika wersje
+			if (error.message.includes('email')) {
+				return { error: 'Nieprawidłowy format adresu email' };
+			}
+			if (error.message.includes('user not found')) {
+				// Dla bezpieczeństwa nie informujemy, że użytkownik nie istnieje
+				return { success: true };
+			}
+
+			return { error: error.message };
+		}
+
+		// W środowisku lokalnym, emaile można sprawdzić pod adresem:
+		// http://localhost:54324 (Inbucket - lokalny serwer testowy email)
+
+		return { success: true };
+	} catch (err) {
+		console.error('Nieoczekiwany błąd podczas wysyłania linku:', err);
+		return {
+			error:
+				'Wystąpił błąd podczas wysyłania linku. Spróbuj ponownie później.',
+		};
+	}
+}

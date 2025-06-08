@@ -4,6 +4,12 @@ import { createSupabaseServerClient } from '@/db/supabase.server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Rate limiting
 const RATE_LIMIT = {
@@ -147,28 +153,61 @@ export async function register(formData: FormData) {
 
 export async function resetPassword(formData: FormData) {
 	const password = formData.get('password') as string;
+	const code = formData.get('code') as string;
+	const token = formData.get('token') as string;
+
+	if (!code && !token) {
+		return { error: 'Brak kodu resetowania hasła' };
+	}
 
 	const supabase = await createSupabaseServerClient();
 
 	try {
-		const { error } = await supabase.auth.updateUser({
+		// Obsługa nowego formatu (code)
+		if (code) {
+			const { error } =
+				await supabase.auth.exchangeCodeForSession(code);
+
+			if (error) {
+				console.error('Błąd wymiany kodu na sesję:', error);
+				return {
+					error: 'Nieprawidłowy lub wygasły kod resetowania hasła',
+				};
+			}
+		}
+		// Obsługa starego formatu (token)
+		else if (token) {
+			const { error } = await supabase.auth.verifyOtp({
+				token_hash: token,
+				type: 'recovery',
+			});
+
+			if (error) {
+				console.error('Błąd weryfikacji tokena:', error);
+				return {
+					error: 'Nieprawidłowy lub wygasły token resetowania hasła',
+				};
+			}
+		}
+
+		const { error: updateError } = await supabase.auth.updateUser({
 			password: password,
 		});
 
-		if (error) {
-			console.error('Błąd resetowania hasła:', error);
+		if (updateError) {
+			console.error('Błąd resetowania hasła:', updateError);
 
 			// Mapowanie komunikatów błędów na przyjazne dla użytkownika wersje
-			if (error.message.includes('password')) {
+			if (updateError.message.includes('password')) {
 				return { error: 'Hasło nie spełnia wymagań bezpieczeństwa' };
 			}
-			if (error.message.includes('auth')) {
+			if (updateError.message.includes('auth')) {
 				return {
 					error: 'Błąd autoryzacji. Spróbuj ponownie później.',
 				};
 			}
 
-			return { error: error.message };
+			return { error: updateError.message };
 		}
 
 		revalidatePath('/', 'layout');
@@ -222,6 +261,122 @@ export async function forgotPassword(formData: FormData) {
 		return {
 			error:
 				'Wystąpił błąd podczas wysyłania linku. Spróbuj ponownie później.',
+		};
+	}
+}
+
+export async function changePassword(formData: FormData) {
+	const currentPassword = formData.get('currentPassword') as string;
+	const newPassword = formData.get('newPassword') as string;
+
+	const supabase = await createSupabaseServerClient();
+
+	try {
+		// Pobierz aktualnego użytkownika
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+		if (!user?.email) {
+			return { error: 'Nie znaleziono użytkownika' };
+		}
+
+		// Najpierw sprawdź czy obecne hasło jest poprawne
+		const { error: signInError } =
+			await supabase.auth.signInWithPassword({
+				email: user.email,
+				password: currentPassword,
+			});
+
+		if (signInError) {
+			if (signInError.message.includes('Invalid login credentials')) {
+				return { error: 'Obecne hasło jest nieprawidłowe' };
+			}
+			return { error: signInError.message };
+		}
+
+		// Jeśli obecne hasło jest poprawne, zmień na nowe
+		const { error: updateError } = await supabase.auth.updateUser({
+			password: newPassword,
+		});
+
+		if (updateError) {
+			console.error('Błąd zmiany hasła:', updateError);
+
+			if (updateError.message.includes('password')) {
+				return { error: 'Hasło nie spełnia wymagań bezpieczeństwa' };
+			}
+			if (updateError.message.includes('auth')) {
+				return {
+					error: 'Błąd autoryzacji. Spróbuj ponownie później.',
+				};
+			}
+
+			return { error: updateError.message };
+		}
+
+		return { success: true };
+	} catch (err) {
+		console.error('Nieoczekiwany błąd podczas zmiany hasła:', err);
+		return {
+			error:
+				'Wystąpił błąd podczas zmiany hasła. Spróbuj ponownie później.',
+		};
+	}
+}
+
+export async function deleteAccount(formData: FormData) {
+	const password = formData.get('password') as string;
+
+	if (!password?.trim()) {
+		return {
+			error: 'Wprowadź hasło, aby potwierdzić usunięcie konta',
+		};
+	}
+
+	const supabase = await createSupabaseServerClient();
+
+	try {
+		// Pobierz aktualnego użytkownika
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
+		if (!user?.email) {
+			return { error: 'Nie znaleziono użytkownika' };
+		}
+
+		// Najpierw sprawdź czy hasło jest poprawne
+		const { error: signInError } =
+			await supabase.auth.signInWithPassword({
+				email: user.email,
+				password: password,
+			});
+
+		if (signInError) {
+			if (signInError.message.includes('Invalid login credentials')) {
+				return { error: 'Podane hasło jest nieprawidłowe' };
+			}
+			return { error: signInError.message };
+		}
+
+		// Jeśli hasło jest poprawne, usuń konto
+		const { error: deleteError } = await supabase.rpc('delete_user');
+
+		if (deleteError) {
+			console.error('Błąd podczas usuwania konta:', deleteError);
+			return {
+				error:
+					'Wystąpił błąd podczas usuwania konta. Spróbuj ponownie później.',
+			};
+		}
+
+		// Wyloguj użytkownika
+		await supabase.auth.signOut();
+
+		return { success: true };
+	} catch (err) {
+		console.error('Nieoczekiwany błąd podczas usuwania konta:', err);
+		return {
+			error: 'Wystąpił nieoczekiwany błąd. Spróbuj ponownie później.',
 		};
 	}
 }

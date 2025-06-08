@@ -1,35 +1,40 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import fs from 'fs';
-import path from 'path';
 
 const PUBLIC_PATHS = [
 	'/login',
 	'/register',
 	'/forgot-password',
 	'/reset-password',
+	'/auth/callback',
+	'/auth/v1/verify',
 ];
-const PROTECTED_PATHS = ['/generate', '/settings', '/profile'];
 
-// Funkcja do zapisu logów do pliku
-function logToFile(message: string) {
-	const logPath = path.join(process.cwd(), 'middleware.log');
-	fs.appendFileSync(
-		logPath,
-		`${new Date().toISOString()} - ${message}\n`,
-	);
-}
+const PROTECTED_PATHS = ['/generate', '/flashcards', '/profile'];
 
 export async function middleware(request: NextRequest) {
 	const requestUrl = new URL(request.url);
+	const type = requestUrl.searchParams.get('type');
+	const token = requestUrl.searchParams.get('token');
 	const code = requestUrl.searchParams.get('code');
 	const pathname = requestUrl.pathname;
 
-	logToFile(`\n=== MIDDLEWARE CALLED ===`);
-	logToFile(`URL: ${request.url}`);
-	logToFile(`Pathname: ${pathname}`);
-	logToFile(`Code: ${code ? 'Present' : 'Not present'}`);
+	console.log(
+		'\n🔍 ================== MIDDLEWARE DEBUG ==================',
+	);
+	console.log('📍 URL:', request.url);
+	console.log('📍 Pathname:', pathname);
+	console.log(
+		'📍 Search Params:',
+		Object.fromEntries(requestUrl.searchParams),
+	);
+	console.log('📍 Type:', type);
+	console.log('📍 Token:', token ? '✅ Present' : '❌ Not present');
+	console.log('📍 Code:', code ? '✅ Present' : '❌ Not present');
+	console.log(
+		'=====================================================\n',
+	);
 
 	// Tworzymy nową odpowiedź z przekazanym requestem
 	let response = NextResponse.next({
@@ -66,15 +71,34 @@ export async function middleware(request: NextRequest) {
 		data: { user },
 	} = await supabase.auth.getUser();
 
-	logToFile(`User status: ${user ? 'Logged in' : 'Not logged in'}`);
+	console.log(
+		'👤 User Status:',
+		user ? '✅ Logged in' : '❌ Not logged in',
+	);
 
-	// Obsługa przepływu resetowania hasła
+	// Obsługa starego formatu linku resetowania hasła
+	if (
+		type === 'recovery' &&
+		token &&
+		pathname.includes('/auth/v1/verify')
+	) {
+		console.log('🔄 Old recovery flow detected!');
+		const redirectUrl = new URL('/reset-password', request.url);
+		console.log(
+			'➡️ Redirecting to reset-password:',
+			redirectUrl.toString(),
+		);
+		return NextResponse.redirect(redirectUrl);
+	}
+
+	// Obsługa nowego formatu linku resetowania hasła
 	if (code && pathname === '/') {
-		logToFile('Password reset flow detected');
+		console.log('🔄 New recovery flow detected!');
 		const redirectUrl = new URL('/reset-password', request.url);
 		redirectUrl.searchParams.set('code', code);
-		logToFile(
-			`Redirecting to reset-password: ${redirectUrl.toString()}`,
+		console.log(
+			'➡️ Redirecting to reset-password:',
+			redirectUrl.toString(),
 		);
 		return NextResponse.redirect(redirectUrl);
 	}
@@ -84,40 +108,42 @@ export async function middleware(request: NextRequest) {
 		pathname.startsWith(path),
 	);
 
-	logToFile(
-		`Path protection: ${isProtectedPath ? 'Protected' : 'Public'}`,
+	console.log(
+		'🔒 Path protection:',
+		isProtectedPath ? 'Protected' : 'Public',
 	);
 
 	// Jeśli użytkownik nie jest zalogowany i próbuje dostać się do chronionej ścieżki
 	if (!user && isProtectedPath) {
-		logToFile('Unauthorized access, redirecting to login');
+		console.log('⛔ Unauthorized access, redirecting to login');
 		return NextResponse.redirect(new URL('/login', request.url));
 	}
 
 	// Jeśli użytkownik jest zalogowany i próbuje dostać się do strony logowania/rejestracji
 	if (user && PUBLIC_PATHS.includes(pathname)) {
-		logToFile('Logged user accessing public path');
+		console.log('👥 Logged user accessing public path');
 		if (pathname === '/reset-password') {
-			logToFile(`Allowing access to ${pathname}`);
+			console.log('✅ Allowing access to reset-password');
 			return response;
 		}
-		logToFile('Redirecting to generate page');
+		console.log('➡️ Redirecting to generate page');
 		return NextResponse.redirect(new URL('/generate', request.url));
 	}
 
-	logToFile('Proceeding with request\n');
+	console.log('✅ Proceeding with request\n');
 	return response;
 }
 
 export const config = {
 	matcher: [
 		/*
-		 * Dopasuj wszystkie ścieżki żądań z wyjątkiem tych zaczynających się od:
-		 * - _next/static (pliki statyczne)
-		 * - _next/image (pliki optymalizacji obrazów)
-		 * - favicon.ico (plik favicon)
-		 * - .*\\.(?:svg|png|jpg|jpeg|gif|webp)$ (pliki graficzne)
+		 * Match all request paths except for the ones starting with:
+		 * - _next/static (static files)
+		 * - _next/image (image optimization files)
+		 * - favicon.ico (favicon file)
 		 */
-		'/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+		'/((?!_next/static|_next/image|favicon.ico).*)',
+		'/auth/:path*',
+		'/auth/v1/:path*',
 	],
 };

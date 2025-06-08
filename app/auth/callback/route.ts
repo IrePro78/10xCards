@@ -1,15 +1,39 @@
-import { createSupabaseServerClient } from '@/db/supabase.server';
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+
+// Funkcja do zapisu logów do pliku
+function logToFile(message: string) {
+	const logPath = path.join(process.cwd(), 'callback.log');
+	fs.appendFileSync(
+		logPath,
+		`${new Date().toISOString()} - ${message}\n`,
+	);
+}
 
 export async function GET(request: Request) {
 	const requestUrl = new URL(request.url);
-	const code = requestUrl.searchParams.get('code');
-	const next = requestUrl.searchParams.get('next') || '/generate';
+	const searchParams = requestUrl.searchParams;
+	const type = searchParams.get('type');
+	const next = searchParams.get('next');
 
-	if (code) {
-		const supabase = await createSupabaseServerClient();
-		await supabase.auth.exchangeCodeForSession(code);
+	logToFile(`\n=== CALLBACK HANDLER CALLED ===`);
+	logToFile(`URL: ${request.url}`);
+	logToFile(
+		`Search Params: ${JSON.stringify(Object.fromEntries(searchParams))}`,
+	);
+	logToFile(`Type: ${type}`);
+	logToFile(`Next: ${next}`);
+
+	// Jeśli mamy parametr next, przekieruj tam
+	if (next) {
+		const redirectUrl = new URL(next, request.url);
+		logToFile(`Redirecting to next: ${redirectUrl.toString()}`);
+		return NextResponse.redirect(redirectUrl);
 	}
 
-	return NextResponse.redirect(new URL(next, request.url));
+	// Domyślnie przekieruj na stronę główną
+	const redirectUrl = new URL('/generate', request.url);
+	logToFile(`Redirecting to default: ${redirectUrl.toString()}`);
+	return NextResponse.redirect(redirectUrl);
 }

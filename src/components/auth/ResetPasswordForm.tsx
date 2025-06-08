@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,10 @@ interface ValidationErrors {
 }
 
 export function ResetPasswordForm() {
+	const searchParams = useSearchParams();
+	const code = searchParams.get('code');
+	const token = searchParams.get('token');
+
 	const [formData, setFormData] = useState({
 		password: '',
 		confirmPassword: '',
@@ -36,6 +41,13 @@ export function ResetPasswordForm() {
 	const [errors, setErrors] = useState<ValidationErrors>({});
 	const [isLoading, setIsLoading] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
+
+	useEffect(() => {
+		if (!code && !token) {
+			toast.error('Brak kodu resetowania hasła');
+			window.location.href = '/login';
+		}
+	}, [code, token]);
 
 	const validateField = (
 		name: 'password' | 'confirmPassword',
@@ -93,13 +105,19 @@ export function ResetPasswordForm() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		if (!isFormValid) return;
+		if (!isFormValid || (!code && !token)) return;
 
 		setIsLoading(true);
 
 		try {
 			const formDataToSend = new FormData();
 			formDataToSend.append('password', formData.password);
+			if (code) {
+				formDataToSend.append('code', code);
+			}
+			if (token) {
+				formDataToSend.append('token', token);
+			}
 
 			const result = await resetPassword(formDataToSend);
 
@@ -127,6 +145,10 @@ export function ResetPasswordForm() {
 		formData.password.trim() !== '' &&
 		formData.confirmPassword.trim() !== '' &&
 		Object.values(errors).every((error) => !error);
+
+	if (!code && !token) {
+		return null;
+	}
 
 	return (
 		<div className="mx-auto max-w-[400px] space-y-6">

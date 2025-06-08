@@ -220,11 +220,24 @@ body {
 	border-color: #3b82f6 !important;
 }
 
+/* Style dla przycisków w trybie jasnym */
+button[class*='destructive'],
+button[class*='bg-destructive'] {
+	background-color: var(--destructive) !important;
+	color: var(--destructive-foreground) !important;
+	border: none !important;
+}
+
+button[class*='destructive']:hover,
+button[class*='bg-destructive']:hover {
+	background-color: #dc2626 !important;
+}
+
 /* Style dla przycisków w trybie ciemnym */
 .dark button[class*='destructive'],
 .dark button[class*='bg-destructive'] {
-	background-color: #ef4444 !important;
-	color: #ffffff !important;
+	background-color: var(--destructive) !important;
+	color: var(--destructive-foreground) !important;
 	border: none !important;
 }
 

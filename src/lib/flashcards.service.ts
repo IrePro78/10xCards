@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import type { SupabaseClient } from '@/db/supabase.client';
-import { supabaseClient } from '@/db/supabase.client';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type {
 	CreateFlashcardCommandDto,
 	FlashcardDto,
@@ -31,7 +30,7 @@ const flashcardsQuerySchema = z.object({
 });
 
 export class FlashcardsService {
-	constructor(private readonly supabase: SupabaseClient) {}
+	constructor(private readonly supabase: SupabaseClient<Database>) {}
 
 	/**
 	 * Tworzy nowe fiszki dla użytkownika.
@@ -145,11 +144,6 @@ export class FlashcardsService {
 	}
 }
 
-// Eksport instancji serwisu z klientem Supabase
-export const flashcardsService = new FlashcardsService(
-	supabaseClient,
-);
-
 /**
  * Aktualizuje istniejącą fiszkę, weryfikując właściciela
  *
@@ -159,7 +153,7 @@ export const flashcardsService = new FlashcardsService(
  * @param userId - ID użytkownika (tymczasowo DEFAULT_USER_ID)
  */
 export async function updateFlashcard(
-	supabase: SupabaseClient,
+	supabase: SupabaseClient<Database>,
 	id: string,
 	data: UpdateFlashcardCommandDto,
 	userId: string,
@@ -189,7 +183,7 @@ export async function updateFlashcard(
  * @param userId - ID użytkownika (tymczasowo DEFAULT_USER_ID)
  */
 export async function deleteFlashcard(
-	supabase: SupabaseClient,
+	supabase: SupabaseClient<Database>,
 	id: string,
 	userId: string,
 ): Promise<void> {

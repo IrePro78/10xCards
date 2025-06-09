@@ -11,7 +11,7 @@ function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
 	return (
 		<Button
 			disabled={isSubmitting}
-			className="h-12 w-full rounded-lg bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50"
+			className="h-12 w-full rounded-lg border-[1.5px] border-[#FF385C] bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:border-[#E31C5F] hover:bg-[#E31C5F] active:scale-[0.98] disabled:opacity-50"
 		>
 			{isSubmitting ? (
 				<div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />

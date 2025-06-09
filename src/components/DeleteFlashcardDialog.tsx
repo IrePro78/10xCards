@@ -65,14 +65,14 @@ export function DeleteFlashcardDialog({
 					<Button
 						variant="outline"
 						onClick={onClose}
-						className="h-10 min-w-[100px] rounded-lg border-[#222222] bg-white text-[#222222] transition-all hover:scale-[1.02] hover:bg-[#F7F7F7] active:scale-[0.98]"
+						className="h-10 min-w-[100px] rounded-lg border-[1.5px] border-[#222222] bg-white text-[#222222] transition-all hover:scale-[1.02] hover:bg-[#F7F7F7] active:scale-[0.98]"
 					>
 						Anuluj
 					</Button>
 					<Button
 						variant="outline"
 						onClick={() => onDelete(flashcard)}
-						className="h-10 min-w-[100px] rounded-lg border-[#222222] bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:bg-[#E31C5F] active:scale-[0.98]"
+						className="h-10 min-w-[100px] rounded-lg border-[1.5px] border-[#FF385C] bg-[#FF385C] text-white transition-all hover:scale-[1.02] hover:border-[#E31C5F] hover:bg-[#E31C5F] active:scale-[0.98]"
 					>
 						Usuń
 					</Button>

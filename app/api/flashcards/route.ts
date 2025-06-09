@@ -6,7 +6,7 @@ import type {
 } from '@/types/types';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { flashcardsService } from '@/lib/flashcards.service';
+import { FlashcardsService } from '@/lib/flashcards.service';
 
 // Schema walidacji dla pojedynczej fiszki
 const flashcardSchema = z.object({
@@ -72,6 +72,9 @@ export async function POST(request: Request) {
 			);
 		}
 
+		// Tworzenie nowej instancji serwisu z autoryzowanym klientem
+		const flashcardsService = new FlashcardsService(supabase);
+
 		// Tworzenie fiszek
 		const createdFlashcards =
 			await flashcardsService.createFlashcards(
@@ -135,6 +138,9 @@ export async function GET(request: Request) {
 					'sort',
 				) as FlashcardsQueryParams['sort']) ?? undefined,
 		};
+
+		// Tworzenie nowej instancji serwisu z autoryzowanym klientem
+		const flashcardsService = new FlashcardsService(supabase);
 
 		// Pobierz fiszki
 		const response = await flashcardsService.getFlashcards(

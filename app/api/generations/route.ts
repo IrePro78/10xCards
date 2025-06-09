@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { supabaseClient } from '@/db/supabase.client';
+import { createSupabaseServerClient } from '@/db/supabase.server';
 import { GenerationsService } from '@/lib/generations.service';
 import { OpenRouterService } from '@/lib/openrouter.service';
 
@@ -26,6 +26,8 @@ const createGenerationSchema = z.object({
  */
 export async function POST(request: NextRequest) {
 	try {
+		const supabase = await createSupabaseServerClient();
+
 		// 1. Parsowanie i walidacja danych wejściowych
 		const body = await request.json();
 		const validationResult = createGenerationSchema.safeParse(body);
@@ -42,10 +44,10 @@ export async function POST(request: NextRequest) {
 
 		const { source_text, model } = validationResult.data;
 
-		// 2. Użycie domyślnego id użytkownika na potrzeby developmentu
+		// 2. Sprawdzenie autentykacji użytkownika
 		const {
 			data: { user },
-		} = await supabaseClient.auth.getUser();
+		} = await supabase.auth.getUser();
 		if (!user) {
 			return NextResponse.json(
 				{ error: 'Unauthorized' },
@@ -56,7 +58,7 @@ export async function POST(request: NextRequest) {
 		// 3. Inicjalizacja serwisów
 		const openRouterService = new OpenRouterService();
 		const generationsService = new GenerationsService(
-			supabaseClient,
+			supabase,
 			openRouterService,
 		);
 

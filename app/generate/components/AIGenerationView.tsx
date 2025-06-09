@@ -149,6 +149,12 @@ export function AIGenerationView() {
 					`Pomyślnie wygenerowano ${totalFlashcards} ${totalFlashcards === 1 ? 'fiszkę' : totalFlashcards < 5 ? 'fiszki' : 'fiszek'}`,
 				);
 
+				// Czyścimy pole tekstowe po pomyślnym wygenerowaniu
+				setViewModel((prev) => ({
+					...prev,
+					sourceText: '',
+				}));
+
 				// Dajemy czas na zobaczenie 100% i dopiero potem ukrywamy
 				await new Promise((resolve) => setTimeout(resolve, 1000));
 				setShowProgress(false);

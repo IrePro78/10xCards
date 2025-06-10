@@ -314,6 +314,35 @@ export function AIGenerationView() {
 				throw new Error('Wystąpił błąd podczas zapisywania fiszek');
 			}
 
+			// Aktualizuj status generacji na 'completed'
+			if (viewModel.generationId) {
+				const updateResponse = await fetch(
+					`/api/generations/${viewModel.generationId}`,
+					{
+						method: 'PATCH',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({
+							status: 'completed',
+							accepted_unedited_count:
+								viewModel.acceptedFlashcards.filter(
+									(f) => !f.isEdited,
+								).length,
+							accepted_edited_count:
+								viewModel.acceptedFlashcards.filter((f) => f.isEdited)
+									.length,
+						}),
+					},
+				);
+
+				if (!updateResponse.ok) {
+					console.error(
+						'Nie udało się zaktualizować statusu generacji',
+					);
+				}
+			}
+
 			toast.success(
 				`Pomyślnie zapisano ${viewModel.acceptedFlashcards.length} fiszek`,
 			);

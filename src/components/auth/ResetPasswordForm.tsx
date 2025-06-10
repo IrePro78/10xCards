@@ -32,7 +32,6 @@ interface ValidationErrors {
 export function ResetPasswordForm() {
 	const searchParams = useSearchParams();
 	const code = searchParams.get('code');
-	const token = searchParams.get('token');
 
 	const [formData, setFormData] = useState({
 		password: '',
@@ -43,11 +42,11 @@ export function ResetPasswordForm() {
 	const [isSuccess, setIsSuccess] = useState(false);
 
 	useEffect(() => {
-		if (!code && !token) {
+		if (!code) {
 			toast.error('Brak kodu resetowania hasła');
 			window.location.href = '/login';
 		}
-	}, [code, token]);
+	}, [code]);
 
 	const validateField = (
 		name: 'password' | 'confirmPassword',
@@ -105,19 +104,14 @@ export function ResetPasswordForm() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		if (!isFormValid || (!code && !token)) return;
+		if (!isFormValid || !code) return;
 
 		setIsLoading(true);
 
 		try {
 			const formDataToSend = new FormData();
 			formDataToSend.append('password', formData.password);
-			if (code) {
-				formDataToSend.append('code', code);
-			}
-			if (token) {
-				formDataToSend.append('token', token);
-			}
+			formDataToSend.append('code', code);
 
 			const result = await resetPassword(formDataToSend);
 
@@ -146,7 +140,7 @@ export function ResetPasswordForm() {
 		formData.confirmPassword.trim() !== '' &&
 		Object.values(errors).every((error) => !error);
 
-	if (!code && !token) {
+	if (!code) {
 		return null;
 	}
 
@@ -199,9 +193,7 @@ export function ResetPasswordForm() {
 					</div>
 
 					<div className="space-y-2">
-						<Label htmlFor="confirmPassword">
-							Potwierdź nowe hasło
-						</Label>
+						<Label htmlFor="confirmPassword">Potwierdź hasło</Label>
 						<Input
 							id="confirmPassword"
 							type="password"
@@ -222,15 +214,6 @@ export function ResetPasswordForm() {
 					</div>
 
 					<SubmitButton isSubmitting={isLoading} />
-
-					<div className="text-muted-foreground text-center text-sm">
-						<Link
-							href="/login"
-							className="font-medium text-[#FF385C] transition-colors hover:text-[#E31C5F]"
-						>
-							Powrót do logowania
-						</Link>
-					</div>
 				</form>
 			)}
 		</div>

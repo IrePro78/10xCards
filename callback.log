@@ -1,0 +1,75 @@
+2025-06-10T07:23:56.377Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T07:23:56.378Z - URL: http://localhost:3000/auth/callback?code=420748d5-0c50-47e1-9bfa-d077131bf3dd&next=%2Freset-password
+2025-06-10T07:23:56.378Z - Search Params: {"code":"420748d5-0c50-47e1-9bfa-d077131bf3dd","next":"/reset-password"}
+2025-06-10T07:23:56.379Z - Code: 420748d5-0c50-47e1-9bfa-d077131bf3dd
+2025-06-10T07:23:56.379Z - Next: /reset-password
+2025-06-10T07:25:00.865Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T07:25:00.865Z - URL: http://localhost:3000/auth/callback?code=a754f9d8-6c38-444f-ac2e-470675aaad55&next=%2Freset-password
+2025-06-10T07:25:00.866Z - Search Params: {"code":"a754f9d8-6c38-444f-ac2e-470675aaad55","next":"/reset-password"}
+2025-06-10T07:25:00.866Z - Code: a754f9d8-6c38-444f-ac2e-470675aaad55
+2025-06-10T07:25:00.866Z - Next: /reset-password
+2025-06-10T07:26:53.720Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T07:26:53.720Z - URL: http://localhost:3000/auth/callback?code=039339c7-e386-49bc-b876-65e6ef92e82f&next=%2Freset-password
+2025-06-10T07:26:53.721Z - Search Params: {"code":"039339c7-e386-49bc-b876-65e6ef92e82f","next":"/reset-password"}
+2025-06-10T07:26:53.721Z - Code: 039339c7-e386-49bc-b876-65e6ef92e82f
+2025-06-10T07:26:53.721Z - Next: /reset-password
+2025-06-10T07:49:46.913Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T07:49:46.913Z - URL: http://localhost:3000/auth/callback?code=936600a7-ef4f-40de-8439-fdff7ac5c942&next=%2Freset-password
+2025-06-10T07:49:46.914Z - Search Params: {"code":"936600a7-ef4f-40de-8439-fdff7ac5c942","next":"/reset-password"}
+2025-06-10T07:49:46.914Z - Code: 936600a7-ef4f-40de-8439-fdff7ac5c942
+2025-06-10T07:49:46.914Z - Next: /reset-password
+2025-06-10T07:51:03.917Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T07:51:03.917Z - URL: http://localhost:3000/auth/callback?code=f866d399-c2c4-444c-8661-addf2c5f8878&next=%2Freset-password
+2025-06-10T07:51:03.917Z - Search Params: {"code":"f866d399-c2c4-444c-8661-addf2c5f8878","next":"/reset-password"}
+2025-06-10T07:51:03.918Z - Code: f866d399-c2c4-444c-8661-addf2c5f8878
+2025-06-10T07:51:03.918Z - Next: /reset-password
+2025-06-10T08:08:21.597Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T08:08:21.597Z - URL: http://localhost:3000/auth/callback?code=b7c901ac-ac50-46c2-9f16-86445dfab0b3&next=%2Freset-password
+2025-06-10T08:08:21.597Z - Search Params: {"code":"b7c901ac-ac50-46c2-9f16-86445dfab0b3","next":"/reset-password"}
+2025-06-10T08:08:21.598Z - Code: b7c901ac-ac50-46c2-9f16-86445dfab0b3
+2025-06-10T08:08:21.598Z - Next: /reset-password
+2025-06-10T08:11:44.895Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T08:11:44.895Z - URL: http://localhost:3000/auth/callback?code=5f927910-3891-44ec-aca6-c84bb3aed1b8&next=%2Freset-password
+2025-06-10T08:11:44.896Z - Search Params: {"code":"5f927910-3891-44ec-aca6-c84bb3aed1b8","next":"/reset-password"}
+2025-06-10T08:11:44.896Z - Token: null
+2025-06-10T08:11:44.897Z - Next: /reset-password
+2025-06-10T08:12:12.225Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T08:12:12.225Z - URL: http://localhost:3000/auth/callback?error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired&next=%2Freset-password
+2025-06-10T08:12:12.226Z - Search Params: {"error":"access_denied","error_code":"otp_expired","error_description":"Email link is invalid or has expired","next":"/reset-password"}
+2025-06-10T08:12:12.226Z - Token: null
+2025-06-10T08:12:12.227Z - Next: /reset-password
+2025-06-10T08:12:38.853Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T08:12:38.854Z - URL: http://localhost:3000/auth/callback?code=144ecd1e-6b79-4bad-87c4-335d4f689f59&next=%2Freset-password
+2025-06-10T08:12:38.854Z - Search Params: {"code":"144ecd1e-6b79-4bad-87c4-335d4f689f59","next":"/reset-password"}
+2025-06-10T08:12:38.855Z - Token: null
+2025-06-10T08:12:38.855Z - Next: /reset-password
+2025-06-10T08:14:49.276Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T08:14:49.278Z - URL: http://localhost:3000/auth/callback?code=d5c116c2-4ded-49e9-8107-6a4441ffb773&next=%2Freset-password&type=recovery
+2025-06-10T08:14:49.278Z - Search Params: {"code":"d5c116c2-4ded-49e9-8107-6a4441ffb773","next":"/reset-password","type":"recovery"}
+2025-06-10T08:14:49.279Z - Code: d5c116c2-4ded-49e9-8107-6a4441ffb773
+2025-06-10T08:14:49.280Z - Type: recovery
+2025-06-10T08:14:49.280Z - Next: /reset-password
+2025-06-10T08:16:47.267Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T08:16:47.268Z - URL: http://localhost:3000/auth/callback?code=3ae719b1-69d6-4a3e-88d0-6ac0515f0b3e&next=%2Freset-password&type=recovery
+2025-06-10T08:16:47.269Z - Search Params: {"code":"3ae719b1-69d6-4a3e-88d0-6ac0515f0b3e","next":"/reset-password","type":"recovery"}
+2025-06-10T08:16:47.269Z - Code: 3ae719b1-69d6-4a3e-88d0-6ac0515f0b3e
+2025-06-10T08:16:47.269Z - Type: recovery
+2025-06-10T08:16:47.270Z - Next: /reset-password
+2025-06-10T08:17:46.908Z - 
+=== CALLBACK HANDLER CALLED ===
+2025-06-10T08:17:46.908Z - URL: http://localhost:3000/auth/callback?code=f939de9b-e409-4890-a263-5bc1793ab5f5&next=%2Freset-password&type=recovery
+2025-06-10T08:17:46.909Z - Search Params: {"code":"f939de9b-e409-4890-a263-5bc1793ab5f5","next":"/reset-password","type":"recovery"}
+2025-06-10T08:17:46.909Z - Code: f939de9b-e409-4890-a263-5bc1793ab5f5
+2025-06-10T08:17:46.910Z - Type: recovery
+2025-06-10T08:17:46.910Z - Next: /reset-password

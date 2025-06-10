@@ -1,39 +1,49 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-// Funkcja do zapisu logów do pliku
-function logToFile(message: string) {
-	const logPath = path.join(process.cwd(), 'callback.log');
-	fs.appendFileSync(
-		logPath,
-		`${new Date().toISOString()} - ${message}\n`,
-	);
-}
+import { logToFile } from '@/lib/logger';
+import { createSupabaseServerClient } from '@/db/supabase.server';
 
 export async function GET(request: Request) {
 	const requestUrl = new URL(request.url);
 	const searchParams = requestUrl.searchParams;
-	const type = searchParams.get('type');
+	const code = searchParams.get('code');
 	const next = searchParams.get('next');
+	const type = searchParams.get('type');
 
 	logToFile(`\n=== CALLBACK HANDLER CALLED ===`);
 	logToFile(`URL: ${request.url}`);
 	logToFile(
 		`Search Params: ${JSON.stringify(Object.fromEntries(searchParams))}`,
 	);
+	logToFile(`Code: ${code}`);
 	logToFile(`Type: ${type}`);
 	logToFile(`Next: ${next}`);
 
-	// Jeśli mamy parametr next, przekieruj tam
-	if (next) {
-		const redirectUrl = new URL(next, request.url);
-		logToFile(`Redirecting to next: ${redirectUrl.toString()}`);
+	// Jeśli to jest resetowanie hasła, nie tworzymy sesji
+	if (type === 'recovery' && code) {
+		const redirectUrl = new URL('/reset-password', request.url);
+		redirectUrl.searchParams.set('code', code);
+
+		// Wyloguj użytkownika przed przekierowaniem
+		const supabase = await createSupabaseServerClient();
+		await supabase.auth.signOut();
+
 		return NextResponse.redirect(redirectUrl);
 	}
 
-	// Domyślnie przekieruj na stronę główną
-	const redirectUrl = new URL('/generate', request.url);
-	logToFile(`Redirecting to default: ${redirectUrl.toString()}`);
-	return NextResponse.redirect(redirectUrl);
+	// Dla normalnego logowania
+	if (code) {
+		const supabase = await createSupabaseServerClient();
+		const { error } =
+			await supabase.auth.exchangeCodeForSession(code);
+
+		if (error) {
+			console.error('Błąd wymiany kodu na sesję:', error);
+			return NextResponse.redirect(new URL('/login', request.url));
+		}
+
+		return NextResponse.redirect(new URL('/generate', request.url));
+	}
+
+	// Domyślne przekierowanie
+	return NextResponse.redirect(new URL('/login', request.url));
 }

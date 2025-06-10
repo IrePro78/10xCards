@@ -148,42 +148,26 @@ export async function register(formData: FormData) {
 export async function resetPassword(formData: FormData) {
 	const password = formData.get('password') as string;
 	const code = formData.get('code') as string;
-	const token = formData.get('token') as string;
 
-	if (!code && !token) {
+	if (!code) {
 		return { error: 'Brak kodu resetowania hasła' };
 	}
 
 	const supabase = await createSupabaseServerClient();
 
 	try {
-		// Obsługa nowego formatu (code)
-		if (code) {
-			const { error } =
-				await supabase.auth.exchangeCodeForSession(code);
+		// Najpierw wymień kod na sesję
+		const { error: exchangeError } =
+			await supabase.auth.exchangeCodeForSession(code);
 
-			if (error) {
-				console.error('Błąd wymiany kodu na sesję:', error);
-				return {
-					error: 'Nieprawidłowy lub wygasły kod resetowania hasła',
-				};
-			}
-		}
-		// Obsługa starego formatu (token)
-		else if (token) {
-			const { error } = await supabase.auth.verifyOtp({
-				token_hash: token,
-				type: 'recovery',
-			});
-
-			if (error) {
-				console.error('Błąd weryfikacji tokena:', error);
-				return {
-					error: 'Nieprawidłowy lub wygasły token resetowania hasła',
-				};
-			}
+		if (exchangeError) {
+			console.error('Błąd wymiany kodu na sesję:', exchangeError);
+			return {
+				error: 'Nieprawidłowy lub wygasły kod resetowania hasła',
+			};
 		}
 
+		// Następnie zaktualizuj hasło
 		const { error: updateError } = await supabase.auth.updateUser({
 			password: password,
 		});
@@ -203,6 +187,9 @@ export async function resetPassword(formData: FormData) {
 
 			return { error: updateError.message };
 		}
+
+		// Wyloguj użytkownika po zmianie hasła
+		await supabase.auth.signOut();
 
 		revalidatePath('/', 'layout');
 		return { success: true };
@@ -227,7 +214,8 @@ export async function forgotPassword(formData: FormData) {
 		const { error } = await supabase.auth.resetPasswordForEmail(
 			email,
 			{
-				redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+				redirectTo:
+					'http://127.0.0.1:3000/auth/callback?type=recovery&next=/reset-password',
 			},
 		);
 
@@ -245,9 +233,6 @@ export async function forgotPassword(formData: FormData) {
 
 			return { error: error.message };
 		}
-
-		// W środowisku lokalnym, emaile można sprawdzić pod adresem:
-		// http://localhost:54324 (Inbucket - lokalny serwer testowy email)
 
 		return { success: true };
 	} catch (err) {

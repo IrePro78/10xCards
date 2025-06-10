@@ -1,35 +1,38 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import fs from 'fs';
-import path from 'path';
 
 const PUBLIC_PATHS = [
 	'/login',
 	'/register',
 	'/forgot-password',
 	'/reset-password',
+	'/auth/callback',
 ];
-const PROTECTED_PATHS = ['/generate', '/settings', '/profile'];
 
-// Funkcja do zapisu logów do pliku
-function logToFile(message: string) {
-	const logPath = path.join(process.cwd(), 'middleware.log');
-	fs.appendFileSync(
-		logPath,
-		`${new Date().toISOString()} - ${message}\n`,
-	);
-}
+const PROTECTED_PATHS = ['/generate', '/flashcards', '/profile'];
 
 export async function middleware(request: NextRequest) {
 	const requestUrl = new URL(request.url);
 	const code = requestUrl.searchParams.get('code');
 	const pathname = requestUrl.pathname;
 
-	logToFile(`\n=== MIDDLEWARE CALLED ===`);
-	logToFile(`URL: ${request.url}`);
-	logToFile(`Pathname: ${pathname}`);
-	logToFile(`Code: ${code ? 'Present' : 'Not present'}`);
+	// Obsługa przekierowania dla resetu hasła
+	if (code) {
+		if (pathname === '/reset-password') {
+			// Jeśli jesteśmy już na stronie reset-password, nie robimy przekierowania
+			console.log('Already on reset-password page');
+		} else {
+			// W przeciwnym razie przekierowujemy przez callback
+			console.log('Redirecting to auth callback');
+			return NextResponse.redirect(
+				new URL(
+					`/auth/callback?code=${code}&next=/reset-password`,
+					request.url,
+				),
+			);
+		}
+	}
 
 	// Tworzymy nową odpowiedź z przekazanym requestem
 	let response = NextResponse.next({
@@ -66,49 +69,26 @@ export async function middleware(request: NextRequest) {
 		data: { user },
 	} = await supabase.auth.getUser();
 
-	logToFile(`User status: ${user ? 'Logged in' : 'Not logged in'}`);
-
-	// Obsługa przepływu resetowania hasła
-	if (code && pathname === '/') {
-		logToFile('Password reset flow detected');
-		const redirectUrl = new URL('/reset-password', request.url);
-		redirectUrl.searchParams.set('code', code);
-		logToFile(
-			`Redirecting to reset-password: ${redirectUrl.toString()}`,
-		);
-		return NextResponse.redirect(redirectUrl);
-	}
-
 	// Sprawdź czy ścieżka jest chroniona
 	const isProtectedPath = PROTECTED_PATHS.some((path) =>
 		pathname.startsWith(path),
 	);
 
-	logToFile(
-		`Path protection: ${isProtectedPath ? 'Protected' : 'Public'}`,
-	);
-
 	// Jeśli użytkownik nie jest zalogowany i próbuje dostać się do chronionej ścieżki
 	if (!user && isProtectedPath) {
-		logToFile('Unauthorized access, redirecting to login');
+		console.log(`Unauthorized access attempt to ${pathname}`);
 		return NextResponse.redirect(new URL('/login', request.url));
 	}
 
 	// Jeśli użytkownik jest zalogowany i próbuje dostać się do strony logowania/rejestracji
 	if (user && PUBLIC_PATHS.includes(pathname)) {
-		logToFile('Logged user accessing public path');
-		if (pathname === '/reset-password') {
-			logToFile(`Allowing access to ${pathname}`);
-			return response;
-		}
-		logToFile('Redirecting to generate page');
 		return NextResponse.redirect(new URL('/generate', request.url));
 	}
 
-	logToFile('Proceeding with request\n');
 	return response;
 }
 
+// Definiuje na jakich ścieżkach middleware będzie uruchamiany
 export const config = {
 	matcher: [
 		/*

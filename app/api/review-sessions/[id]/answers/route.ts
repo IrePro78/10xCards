@@ -12,9 +12,10 @@ const answerSchema = z.object({
 
 export async function POST(
 	request: Request,
-	{ params }: { params: { id: string } },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
+		const resolvedParams = await params;
 		const cookieStore = await cookies();
 		const supabase = createServerClient(
 			process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -48,7 +49,7 @@ export async function POST(
 
 		const reviewService = new ReviewService(supabase);
 		await reviewService.saveAnswer(
-			params.id,
+			resolvedParams.id,
 			validatedBody.flashcard_id,
 			validatedBody.quality,
 			validatedBody.response_time_ms,

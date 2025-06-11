@@ -12,9 +12,10 @@ const updateGenerationSchema = z.object({
 
 export async function PATCH(
 	request: Request,
-	{ params }: { params: { id: string } },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
+		const resolvedParams = await params;
 		const cookieStore = await cookies();
 		const supabase = createServerClient(
 			process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -69,7 +70,7 @@ export async function PATCH(
 					validationResult.data.accepted_edited_count,
 				updated_at: new Date().toISOString(),
 			})
-			.eq('id', params.id)
+			.eq('id', resolvedParams.id)
 			.eq('user_id', user.id)
 			.select()
 			.single();

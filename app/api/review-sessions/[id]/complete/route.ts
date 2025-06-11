@@ -5,9 +5,10 @@ import { ReviewService } from '@/lib/review.service';
 
 export async function POST(
 	request: Request,
-	{ params }: { params: { id: string } },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
+		const resolvedParams = await params;
 		const cookieStore = await cookies();
 		const supabase = createServerClient(
 			process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,7 +38,7 @@ export async function POST(
 		}
 
 		const reviewService = new ReviewService(supabase);
-		await reviewService.completeSession(params.id);
+		await reviewService.completeSession(resolvedParams.id);
 
 		return NextResponse.json({
 			message: 'Session completed successfully',

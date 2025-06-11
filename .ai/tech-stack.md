@@ -5,7 +5,7 @@
    Supabase jako Backend-as-a-Service oferuje wbudowaną obsługę bazy danych PostgreSQL oraz mechanizmy autentykacji, co dramatycznie przyspiesza wdrażanie podstawowych funkcjonalności.
    AI:
    Integracja z Openrouter.ai zapewnia dostęp do szerokiej gamy modeli AI, co umożliwia szybkie eksperymenty z funkcjonalnościami opartymi na sztucznej inteligencji.
-   Wniosek: Stos ten pozwala na bardzo szybkie stworzenie MVP, ponieważ wiele kluczowych elementów jest dostępnych „od ręki” i nie wymaga złożonych customowych rozwiązań.
+   Wniosek: Stos ten pozwala na bardzo szybkie stworzenie MVP, ponieważ wiele kluczowych elementów jest dostępnych "od ręki" i nie wymaga złożonych customowych rozwiązań.
 2. Skalowalność
    Next.js:
    Umożliwia razem z SSR (Server Side Rendering) oraz SSG (Static Site Generation) elastyczne skalowanie aplikacji w miarę wzrostu ruchu i potrzeb projektowych.
@@ -48,6 +48,16 @@
    AI:
    Kluczowe jest odpowiedzialne zarządzanie API kluczami oraz monitorowanie wykorzystania zewnętrznych modeli AI.
    Wniosek: Technologia umożliwia wdrożenie wysokiego poziomu bezpieczeństwa, pod warunkiem przestrzegania najlepszych praktyk oraz regularnych audytów systemu.
+7. Testowanie
+   Testy jednostkowe:
+   Vitest wraz z React Testing Library umożliwiają szybkie i wydajne testowanie komponentów UI oraz funkcji pomocniczych. Vitest oferuje lepszą integrację z ekosystemem Vite i szybsze wykonanie testów w porównaniu do Jest.
+   Testy end-to-end:
+   Playwright pozwala na testowanie aplikacji w różnych przeglądarkach (Chrome, Firefox, Safari) z jednego źródła kodu, co zwiększa pokrycie testów. Umożliwia także automatyzację scenariuszy użytkownika i wykrywanie regresji na poziomie interfejsu.
+   Testy API i integracyjne:
+   Supertest w połączeniu z Supabase Test Helpers zapewniają możliwość testowania route handlerów Next.js oraz integracji z Supabase bez konieczności mocowania całej usługi.
+   CI/CD:
+   GitHub Actions pozwala na automatyczne uruchamianie wszystkich typów testów przy każdym push'u, co zapewnia szybkie wykrywanie problemów i utrzymanie wysokiej jakości kodu.
+   Wniosek: Wybrane narzędzia testowe zapewniają solidne pokrycie wszystkich warstw aplikacji, od komponentów UI po integrację z bazą danych, umożliwiając utrzymanie wysokiej jakości kodu i szybkie wykrywanie regresji.
    Podsumowanie
    Oceniając wszystkie aspekty, zaproponowany stos technologiczny wydaje się odpowiadać potrzebom projektu @prd.md:
    Szybkie dostarczenie MVP: Dzięki wykorzystaniu technologii wysokopoziomowych i BaaS, MVP można stworzyć bardzo szybko.

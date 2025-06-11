@@ -7,7 +7,13 @@ import { useEffect, useState } from 'react';
 
 export function ThemeToggle() {
 	const [mounted, setMounted] = useState(false);
-	const { theme, setTheme } = useTheme();
+	const { resolvedTheme, setTheme } = useTheme();
+
+	// Określ etykietę dostępności na podstawie aktualnego motywu
+	const ariaLabel =
+		resolvedTheme === 'light'
+			? 'Przełącz na ciemny motyw'
+			: 'Przełącz na jasny motyw';
 
 	useEffect(() => {
 		setMounted(true);
@@ -30,15 +36,14 @@ export function ThemeToggle() {
 		<Button
 			variant="ghost"
 			size="icon"
-			onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-			className="h-9 w-9 rounded-full"
-			aria-label={
-				theme === 'light'
-					? 'Przełącz na ciemny motyw'
-					: 'Przełącz na jasny motyw'
+			onClick={() =>
+				setTheme(resolvedTheme === 'light' ? 'dark' : 'light')
 			}
+			className="h-9 w-9 rounded-full"
+			aria-label={ariaLabel}
+			data-testid="theme-toggle"
 		>
-			{theme === 'light' ? (
+			{resolvedTheme === 'light' ? (
 				<Moon className="h-5 w-5" />
 			) : (
 				<Sun className="h-5 w-5" />

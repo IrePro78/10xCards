@@ -22,6 +22,12 @@
 - **Backend:** Supabase (PostgreSQL) for authentication and database management
 - **AI Integration:** Openrouter.ai for generating flashcards
 - **Environment:** Node.js version 22.15.0
+- **Testing:**
+  - **Unit Tests:** Vitest and React Testing Library for component and utility testing
+  - **E2E Tests:** Playwright for browser-based end-to-end testing
+  - **API Tests:** Supertest and Supabase Test Helpers
+  - **CI/CD:** GitHub Actions for continuous integration and test automation
+  - **Performance:** Lighthouse CI for web performance monitoring
 
 ## Getting Started Locally
 
@@ -71,6 +77,18 @@
 - **check:** Checks code formatting using Prettier
   ```bash
   npm run check
+  ```
+- **test:unit:** Runs unit tests with Vitest
+  ```bash
+  npm run test:unit
+  ```
+- **test:e2e:** Runs end-to-end tests with Playwright
+  ```bash
+  npm run test:e2e
+  ```
+- **test:ci:** Runs all tests in CI environment
+  ```bash
+  npm run test:ci
   ```
 
 ## Project Scope

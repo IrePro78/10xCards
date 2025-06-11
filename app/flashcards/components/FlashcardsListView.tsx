@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, ChangeEvent } from 'react';
 import { toast } from 'sonner';
 import type {
 	FlashcardListDto,
@@ -26,7 +26,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
-import type { ChangeEvent } from 'react';
 
 interface FlashcardsListViewModel {
 	flashcards: FlashcardListDto[];
@@ -60,7 +59,7 @@ export function FlashcardsListView() {
 	const [deletingFlashcard, setDeletingFlashcard] =
 		useState<FlashcardListDto | null>(null);
 
-	const fetchFlashcards = async () => {
+	const fetchFlashcards = useCallback(async () => {
 		try {
 			setViewModel((prev) => ({
 				...prev,
@@ -107,7 +106,12 @@ export function FlashcardsListView() {
 			}));
 			toast.error(errorMessage);
 		}
-	};
+	}, [
+		viewModel.page,
+		viewModel.perPage,
+		viewModel.search,
+		viewModel.sort,
+	]);
 
 	const handleSearch = (value: string) => {
 		setViewModel((prev) => ({
@@ -203,7 +207,12 @@ export function FlashcardsListView() {
 
 	useEffect(() => {
 		fetchFlashcards();
-	}, [viewModel.search, viewModel.sort, viewModel.page]);
+	}, [
+		viewModel.search,
+		viewModel.sort,
+		viewModel.page,
+		fetchFlashcards,
+	]);
 
 	return (
 		<div className="space-y-6 rounded-xl p-6">

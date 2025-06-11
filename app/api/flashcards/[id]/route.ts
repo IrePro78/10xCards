@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import {
-	FlashcardIdParams,
 	UpdateFlashcardResponseDto,
 	DeleteFlashcardResponseDto,
 } from '@/types/types';
@@ -31,9 +30,10 @@ const updateFlashcardSchema = z
  */
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: FlashcardIdParams },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
+		const resolvedParams = await params;
 		const cookieStore = await cookies();
 		const supabase = createServerClient(
 			process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -63,7 +63,7 @@ export async function PUT(
 		}
 
 		// Walidacja ID
-		const { id } = await params;
+		const { id } = resolvedParams;
 		const validatedId = idSchema.parse(id);
 
 		// Walidacja body
@@ -119,9 +119,10 @@ export async function PUT(
  */
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: FlashcardIdParams },
+	{ params }: { params: Promise<{ id: string }> },
 ) {
 	try {
+		const resolvedParams = await params;
 		const cookieStore = await cookies();
 		const supabase = createServerClient(
 			process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -151,7 +152,7 @@ export async function DELETE(
 		}
 
 		// Walidacja ID
-		const { id } = await params;
+		const { id } = resolvedParams;
 		const validatedId = idSchema.parse(id);
 
 		// Usunięcie fiszki

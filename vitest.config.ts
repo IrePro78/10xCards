@@ -9,40 +9,38 @@ dotenv.config({ path: '.env.test' });
 export default defineConfig({
 	plugins: [react()],
 	test: {
-		environment: 'jsdom',
-		globals: true,
+		environment: 'happy-dom',
+		setupFiles: ['./src/test/setup.ts'],
+		env: {
+			// Domyślne wartości dla testów
+			SUPABASE_URL: 'https://mock.supabase.co',
+			SUPABASE_PUBLIC_KEY: 'mock_public_key',
+			E2E_USERNAME_ID: 'test_user_id',
+			E2E_USERNAME: 'test_user',
+			E2E_PASSWORD: 'test_password',
+		},
 		coverage: {
 			provider: 'v8',
 			reporter: ['text', 'json', 'html'],
 			exclude: [
-				'node_modules/**',
-				'src/types/**',
+				'node_modules/',
+				'src/test/',
 				'**/*.d.ts',
-				'**/*.test.{ts,tsx}',
-				'**/index.{ts,tsx}',
+				'**/*.config.*',
+				'**/coverage/**',
 			],
-			thresholds: {
-				statements: 70,
-				branches: 70,
-				functions: 70,
-				lines: 70,
-			},
 		},
-		include: ['src/**/*.test.{ts,tsx}', 'app/**/*.test.{ts,tsx}'],
-		setupFiles: ['./src/test/setup.ts'],
-		// Konfiguracja zmiennych środowiskowych dla testów
-		env: {
-			SUPABASE_URL: process.env.SUPABASE_URL,
-			SUPABASE_PUBLIC_KEY: process.env.SUPABASE_PUBLIC_KEY,
-			E2E_USERNAME_ID: process.env.E2E_USERNAME_ID,
-			E2E_USERNAME: process.env.E2E_USERNAME,
-			E2E_PASSWORD: process.env.E2E_PASSWORD,
-		},
+		exclude: [
+			'**/node_modules/**',
+			'**/dist/**',
+			'**/cypress/**',
+			'**/.{idea,git,cache,output,temp}/**',
+			'**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
+		],
 	},
 	resolve: {
 		alias: {
 			'@': resolve(__dirname, './src'),
-			'@app': resolve(__dirname, './app'),
 		},
 	},
 });

@@ -16,6 +16,14 @@ test.describe('Generowanie fiszek - E2E', () => {
 		const supabase = await createAuthenticatedE2ESupabaseClient();
 		const userData = getE2EUserData();
 
+		// Pobierz token sesji
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+		if (!session?.access_token) {
+			throw new Error('Brak tokenu sesji');
+		}
+
 		// Przykładowy tekst do generowania fiszek
 		const sampleText = `
 			React to biblioteka JavaScript do budowania interfejsów użytkownika, stworzona przez Facebook (obecnie Meta).
@@ -47,11 +55,15 @@ test.describe('Generowanie fiszek - E2E', () => {
 			'🚀 Rozpoczynam test generowania fiszek przez API...',
 		);
 
-		// 1. Wyślij żądanie do API generowania
+		// 1. Wyślij żądanie do API generowania z tokenem autoryzacyjnym
 		const response = await request.post('/api/generations', {
 			data: {
 				source_text: sampleText,
 				model: 'gpt-4o-mini', // Używamy modelu, który jest dostępny
+			},
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+				'Content-Type': 'application/json',
 			},
 		});
 
@@ -161,6 +173,16 @@ test.describe('Generowanie fiszek - E2E', () => {
 	test('powinien obsłużyć błąd przy nieprawidłowych danych', async ({
 		request,
 	}) => {
+		const supabase = await createAuthenticatedE2ESupabaseClient();
+
+		// Pobierz token sesji
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+		if (!session?.access_token) {
+			throw new Error('Brak tokenu sesji');
+		}
+
 		console.log('🧪 Testowanie obsługi błędów...');
 
 		// Test z za krótkim tekstem
@@ -168,6 +190,10 @@ test.describe('Generowanie fiszek - E2E', () => {
 			data: {
 				source_text: 'Za krótki tekst',
 				model: 'gpt-4o-mini',
+			},
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+				'Content-Type': 'application/json',
 			},
 		});
 
@@ -181,6 +207,10 @@ test.describe('Generowanie fiszek - E2E', () => {
 		const noTextResponse = await request.post('/api/generations', {
 			data: {
 				model: 'gpt-4o-mini',
+			},
+			headers: {
+				Authorization: `Bearer ${session.access_token}`,
+				'Content-Type': 'application/json',
 			},
 		});
 

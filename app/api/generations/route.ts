@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createSupabaseServerClient } from '@/db/supabase.server';
+import { createClient } from '@supabase/supabase-js';
 import { GenerationsService } from '@/lib/generations.service';
 import { OpenRouterService } from '@/lib/openrouter.service';
 
@@ -17,6 +18,29 @@ const createGenerationSchema = z.object({
 });
 
 /**
+ * Tworzy klienta Supabase z tokenem z headeru Authorization
+ */
+function createSupabaseClientWithToken(authHeader?: string) {
+	if (!authHeader || !authHeader.startsWith('Bearer ')) {
+		return null;
+	}
+
+	const token = authHeader.substring(7); // Usuń "Bearer "
+
+	return createClient(
+		process.env.NEXT_PUBLIC_SUPABASE_URL!,
+		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+		{
+			global: {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			},
+		},
+	);
+}
+
+/**
  * Endpoint POST /generations
  *
  * Tworzy nową sesję generacji fiszek na podstawie tekstu źródłowego.
@@ -26,7 +50,23 @@ const createGenerationSchema = z.object({
  */
 export async function POST(request: NextRequest) {
 	try {
-		const supabase = await createSupabaseServerClient();
+		// Sprawdź czy jest token w headerze Authorization
+		const authHeader = request.headers.get('authorization');
+		let supabase;
+
+		if (authHeader) {
+			// Użyj klienta z tokenem z headeru
+			supabase = createSupabaseClientWithToken(authHeader);
+			if (!supabase) {
+				return NextResponse.json(
+					{ error: 'Nieprawidłowy format tokenu autoryzacyjnego' },
+					{ status: 401 },
+				);
+			}
+		} else {
+			// Użyj standardowego klienta serwerowego
+			supabase = await createSupabaseServerClient();
+		}
 
 		// 1. Parsowanie i walidacja danych wejściowych
 		const body = await request.json();

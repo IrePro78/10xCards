@@ -20,7 +20,8 @@
 		],
 		"paths": {
 			"@/*": ["./src/*", "./app/*"]
-		}
+		},
+		"types": ["vitest/globals"]
 	},
 	"include": [
 		"next-env.d.ts",

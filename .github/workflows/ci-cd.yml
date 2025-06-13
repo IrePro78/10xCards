@@ -53,7 +53,7 @@ jobs:
         run: npm ci
 
       - name: Run unit tests with coverage (excluding E2E)
-        run: npm run test:coverage -- --exclude="**/e2e.test.ts" --exclude="**/flashcard-generation.test.ts"
+        run: npm run test:coverage -- --exclude="**/e2e.test.ts" --exclude="**/flashcard-generation.test.ts" --exclude="**/e2e/**" --exclude="**/*.spec.ts"
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

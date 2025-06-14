@@ -2,12 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// W CI nie ładujemy .env.test
+// W CI nie ładujemy .env.test - zmienne są ustawiane przez workflow
 if (!process.env.CI) {
 	dotenv.config({ path: path.resolve(process.cwd(), '.env.test') });
 }
 
 // Sprawdź czy wszystkie wymagane zmienne są dostępne
+// ale tylko jeśli nie jesteśmy w trakcie budowania w CI
 const required = [
 	'SUPABASE_URL',
 	'SUPABASE_PUBLIC_KEY',
@@ -16,11 +17,14 @@ const required = [
 	'E2E_PASSWORD',
 ];
 
-const missing = required.filter((key) => !process.env[key]);
-if (missing.length > 0) {
-	throw new Error(
-		`Brak wymaganych zmiennych środowiskowych: ${missing.join(', ')}`,
-	);
+// W CI zmienne są ustawiane później, więc pomijamy tę walidację
+if (!process.env.CI) {
+	const missing = required.filter((key) => !process.env[key]);
+	if (missing.length > 0) {
+		throw new Error(
+			`Brak wymaganych zmiennych środowiskowych: ${missing.join(', ')}`,
+		);
+	}
 }
 
 export default defineConfig({
@@ -52,14 +56,15 @@ export default defineConfig({
 		timeout: 120000, // 2 minuty na start serwera w CI
 		env: {
 			NODE_ENV: 'test',
-			// TypeScript wie, że te zmienne istnieją, bo sprawdziliśmy je wyżej
-			SUPABASE_URL: process.env.SUPABASE_URL!,
-			NEXT_PUBLIC_SUPABASE_URL: process.env.SUPABASE_URL!,
-			SUPABASE_PUBLIC_KEY: process.env.SUPABASE_PUBLIC_KEY!,
-			NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.SUPABASE_PUBLIC_KEY!,
-			E2E_USERNAME_ID: process.env.E2E_USERNAME_ID!,
-			E2E_USERNAME: process.env.E2E_USERNAME!,
-			E2E_PASSWORD: process.env.E2E_PASSWORD!,
+			// W CI te zmienne będą dostępne z GitHub Actions
+			SUPABASE_URL: process.env.SUPABASE_URL || '',
+			NEXT_PUBLIC_SUPABASE_URL: process.env.SUPABASE_URL || '',
+			SUPABASE_PUBLIC_KEY: process.env.SUPABASE_PUBLIC_KEY || '',
+			NEXT_PUBLIC_SUPABASE_ANON_KEY:
+				process.env.SUPABASE_PUBLIC_KEY || '',
+			E2E_USERNAME_ID: process.env.E2E_USERNAME_ID || '',
+			E2E_USERNAME: process.env.E2E_USERNAME || '',
+			E2E_PASSWORD: process.env.E2E_PASSWORD || '',
 		},
 	},
 });

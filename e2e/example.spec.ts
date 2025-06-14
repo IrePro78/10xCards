@@ -7,7 +7,7 @@ test.describe('Testy strony głównej', () => {
 	}) => {
 		const homePage = new HomePage(page);
 		await homePage.goto();
-		await homePage.expectPageLoaded();
+		await expect(page).toHaveTitle(/10xCards/);
 	});
 
 	test('Test nawigacji - podstawowy', async ({ page }) => {

@@ -2,9 +2,24 @@ import { createClient } from '@supabase/supabase-js';
 
 /**
  * Prosty helper do testów e2e z Supabase
- * Używa zmiennych z .env.test
+ * Używa zmiennych z .env.test lub zmiennych środowiskowych CI
  */
 export function createE2ESupabaseClient() {
+	// W środowisku CI używamy mocków
+	if (process.env.CI) {
+		console.log('🤖 Wykryto środowisko CI - używam mocków');
+		return createClient(
+			'http://mock.supabase.co',
+			'mock_key_for_tests',
+			{
+				auth: {
+					autoRefreshToken: false,
+					persistSession: false,
+				},
+			},
+		);
+	}
+
 	const supabaseUrl = process.env.SUPABASE_URL;
 	const supabaseKey = process.env.SUPABASE_PUBLIC_KEY;
 
@@ -23,6 +38,12 @@ export function createE2ESupabaseClient() {
 export async function createAuthenticatedE2ESupabaseClient() {
 	const supabase = createE2ESupabaseClient();
 	const userData = getE2EUserData();
+
+	// W środowisku CI zwracamy mocka
+	if (process.env.CI) {
+		console.log('🤖 CI: Pomijam prawdziwe logowanie');
+		return supabase;
+	}
 
 	// Sprawdź czy dane użytkownika są dostępne
 	if (!userData.username || !userData.password) {

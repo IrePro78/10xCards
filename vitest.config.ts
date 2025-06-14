@@ -13,8 +13,8 @@ export default defineConfig({
 		globals: true,
 		setupFiles: ['./src/test/setup.ts'],
 		env: {
-			// Domyślne wartości dla testów
-			SUPABASE_URL: 'https://mock.supabase.co',
+			// Używamy MSW do mockowania Supabase
+			SUPABASE_URL: 'http://127.0.0.1:3000',
 			SUPABASE_PUBLIC_KEY: 'mock_public_key',
 			E2E_USERNAME_ID: 'test_user_id',
 			E2E_USERNAME: 'test_user',

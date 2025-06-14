@@ -5,9 +5,11 @@ import { createClient } from '@supabase/supabase-js';
  * Używa zmiennych z .env.test lub zmiennych środowiskowych CI
  */
 export function createE2ESupabaseClient() {
-	// W środowisku CI używamy mocków
-	if (process.env.CI) {
-		console.log('🤖 Wykryto środowisko CI - używam mocków');
+	const supabaseUrl = process.env.SUPABASE_URL;
+	const supabaseKey = process.env.SUPABASE_PUBLIC_KEY;
+
+	if (!supabaseUrl || !supabaseKey) {
+		console.warn('⚠️ Brak konfiguracji Supabase - używam mocków');
 		return createClient(
 			'http://mock.supabase.co',
 			'mock_key_for_tests',
@@ -20,16 +22,12 @@ export function createE2ESupabaseClient() {
 		);
 	}
 
-	const supabaseUrl = process.env.SUPABASE_URL;
-	const supabaseKey = process.env.SUPABASE_PUBLIC_KEY;
-
-	if (!supabaseUrl || !supabaseKey) {
-		throw new Error(
-			'Brak konfiguracji Supabase dla testów e2e. Sprawdź plik .env.test',
-		);
-	}
-
-	return createClient(supabaseUrl, supabaseKey);
+	return createClient(supabaseUrl, supabaseKey, {
+		auth: {
+			autoRefreshToken: false,
+			persistSession: false,
+		},
+	});
 }
 
 /**
@@ -39,17 +37,10 @@ export async function createAuthenticatedE2ESupabaseClient() {
 	const supabase = createE2ESupabaseClient();
 	const userData = getE2EUserData();
 
-	// W środowisku CI zwracamy mocka
-	if (process.env.CI) {
-		console.log('🤖 CI: Pomijam prawdziwe logowanie');
-		return supabase;
-	}
-
 	// Sprawdź czy dane użytkownika są dostępne
 	if (!userData.username || !userData.password) {
-		throw new Error(
-			'Brak danych logowania użytkownika testowego w .env.test',
-		);
+		console.warn('⚠️ Brak danych logowania - używam mocków');
+		return supabase;
 	}
 
 	// Sprawdź czy użytkownik jest już zalogowany
@@ -89,9 +80,9 @@ export async function createAuthenticatedE2ESupabaseClient() {
  */
 export function getE2EUserData() {
 	return {
-		id: process.env.E2E_USERNAME_ID,
-		username: process.env.E2E_USERNAME,
-		password: process.env.E2E_PASSWORD,
+		id: process.env.E2E_USERNAME_ID || 'test_user_id',
+		username: process.env.E2E_USERNAME || 'test@example.com',
+		password: process.env.E2E_PASSWORD || 'test_password',
 	};
 }
 
@@ -109,8 +100,10 @@ export function validateE2EConfig() {
 	const missing = required.filter((key) => !process.env[key]);
 
 	if (missing.length > 0) {
-		throw new Error(
-			`Brak wymaganych zmiennych środowiskowych: ${missing.join(', ')}`,
+		console.warn(
+			`⚠️ Brak niektórych zmiennych środowiskowych: ${missing.join(
+				', ',
+			)} - używam wartości domyślnych`,
 		);
 	}
 

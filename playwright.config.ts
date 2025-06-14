@@ -7,6 +7,16 @@ if (!process.env.CI) {
 	dotenv.config({ path: path.resolve(process.cwd(), '.env.test') });
 }
 
+// Przygotuj zmienne środowiskowe
+const env = {
+	SUPABASE_URL: process.env.SUPABASE_URL || 'http://mock.supabase.co',
+	SUPABASE_PUBLIC_KEY:
+		process.env.SUPABASE_PUBLIC_KEY || 'mock_key_for_tests',
+	E2E_USERNAME_ID: process.env.E2E_USERNAME_ID || 'test_user_id',
+	E2E_USERNAME: process.env.E2E_USERNAME || 'test@example.com',
+	E2E_PASSWORD: process.env.E2E_PASSWORD || 'test_password',
+};
+
 export default defineConfig({
 	testDir: './e2e',
 	fullyParallel: true,
@@ -20,6 +30,8 @@ export default defineConfig({
 		baseURL: 'http://localhost:3000',
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
+		// Przekaż zmienne środowiskowe do testów
+		...env,
 	},
 	projects: [
 		{

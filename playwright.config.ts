@@ -2,8 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
+// Sprawdź czy jesteśmy w środowisku CI
+const isCI = process.env.CI || process.env.GITHUB_ACTIONS || false;
+
 // W CI nie ładujemy .env.test - zmienne są ustawiane przez workflow
-if (!process.env.CI) {
+if (!isCI) {
 	dotenv.config({ path: path.resolve(process.cwd(), '.env.test') });
 }
 
@@ -18,7 +21,7 @@ const required = [
 ];
 
 // W CI zmienne są ustawiane później, więc pomijamy tę walidację
-if (!process.env.CI) {
+if (!isCI) {
 	const missing = required.filter((key) => !process.env[key]);
 	if (missing.length > 0) {
 		throw new Error(
@@ -30,10 +33,10 @@ if (!process.env.CI) {
 export default defineConfig({
 	testDir: './e2e',
 	fullyParallel: true,
-	forbidOnly: !!process.env.CI,
-	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 1 : undefined,
-	reporter: process.env.CI
+	forbidOnly: !!isCI,
+	retries: isCI ? 2 : 0,
+	workers: isCI ? 1 : undefined,
+	reporter: isCI
 		? [['github'], ['list']]
 		: [['html', { open: 'never' }], ['list']],
 	use: {
@@ -50,7 +53,7 @@ export default defineConfig({
 	webServer: {
 		command: 'npm run build && npm run start',
 		url: 'http://localhost:3000',
-		reuseExistingServer: !process.env.CI,
+		reuseExistingServer: !isCI,
 		stdout: 'pipe',
 		stderr: 'pipe',
 		timeout: 120000, // 2 minuty na start serwera w CI

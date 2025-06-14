@@ -7,15 +7,21 @@ if (!process.env.CI) {
 	dotenv.config({ path: path.resolve(process.cwd(), '.env.test') });
 }
 
-// Przygotuj zmienne środowiskowe
-const env = {
-	SUPABASE_URL: process.env.SUPABASE_URL || 'http://mock.supabase.co',
-	SUPABASE_PUBLIC_KEY:
-		process.env.SUPABASE_PUBLIC_KEY || 'mock_key_for_tests',
-	E2E_USERNAME_ID: process.env.E2E_USERNAME_ID || 'test_user_id',
-	E2E_USERNAME: process.env.E2E_USERNAME || 'test@example.com',
-	E2E_PASSWORD: process.env.E2E_PASSWORD || 'test_password',
-};
+// Sprawdź czy wszystkie wymagane zmienne są dostępne
+const required = [
+	'SUPABASE_URL',
+	'SUPABASE_PUBLIC_KEY',
+	'E2E_USERNAME_ID',
+	'E2E_USERNAME',
+	'E2E_PASSWORD',
+];
+
+const missing = required.filter((key) => !process.env[key]);
+if (missing.length > 0) {
+	throw new Error(
+		`Brak wymaganych zmiennych środowiskowych: ${missing.join(', ')}`,
+	);
+}
 
 export default defineConfig({
 	testDir: './e2e',
@@ -30,8 +36,6 @@ export default defineConfig({
 		baseURL: 'http://localhost:3000',
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
-		// Przekaż zmienne środowiskowe do testów
-		...env,
 	},
 	projects: [
 		{
@@ -48,17 +52,14 @@ export default defineConfig({
 		timeout: 120000, // 2 minuty na start serwera w CI
 		env: {
 			NODE_ENV: 'test',
-			SUPABASE_URL:
-				process.env.SUPABASE_URL || 'http://mock.supabase.co',
-			NEXT_PUBLIC_SUPABASE_URL:
-				process.env.SUPABASE_URL || 'http://mock.supabase.co',
-			SUPABASE_PUBLIC_KEY:
-				process.env.SUPABASE_PUBLIC_KEY || 'mock_key_for_tests',
-			NEXT_PUBLIC_SUPABASE_ANON_KEY:
-				process.env.SUPABASE_PUBLIC_KEY || 'mock_key_for_tests',
-			E2E_USERNAME_ID: process.env.E2E_USERNAME_ID || 'test_user_id',
-			E2E_USERNAME: process.env.E2E_USERNAME || 'test@example.com',
-			E2E_PASSWORD: process.env.E2E_PASSWORD || 'test_password',
+			// TypeScript wie, że te zmienne istnieją, bo sprawdziliśmy je wyżej
+			SUPABASE_URL: process.env.SUPABASE_URL!,
+			NEXT_PUBLIC_SUPABASE_URL: process.env.SUPABASE_URL!,
+			SUPABASE_PUBLIC_KEY: process.env.SUPABASE_PUBLIC_KEY!,
+			NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.SUPABASE_PUBLIC_KEY!,
+			E2E_USERNAME_ID: process.env.E2E_USERNAME_ID!,
+			E2E_USERNAME: process.env.E2E_USERNAME!,
+			E2E_PASSWORD: process.env.E2E_PASSWORD!,
 		},
 	},
 });

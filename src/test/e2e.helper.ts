@@ -9,16 +9,8 @@ export function createE2ESupabaseClient() {
 	const supabaseKey = process.env.SUPABASE_PUBLIC_KEY;
 
 	if (!supabaseUrl || !supabaseKey) {
-		console.warn('⚠️ Brak konfiguracji Supabase - używam mocków');
-		return createClient(
-			'http://mock.supabase.co',
-			'mock_key_for_tests',
-			{
-				auth: {
-					autoRefreshToken: false,
-					persistSession: false,
-				},
-			},
+		throw new Error(
+			'Brak konfiguracji SUPABASE_URL lub SUPABASE_PUBLIC_KEY. Sprawdź zmienne środowiskowe.',
 		);
 	}
 
@@ -38,9 +30,10 @@ export async function createAuthenticatedE2ESupabaseClient() {
 	const userData = getE2EUserData();
 
 	// Sprawdź czy dane użytkownika są dostępne
-	if (!userData.username || !userData.password) {
-		console.warn('⚠️ Brak danych logowania - używam mocków');
-		return supabase;
+	if (!userData.username || !userData.password || !userData.id) {
+		throw new Error(
+			'Brak danych logowania użytkownika testowego (E2E_USERNAME_ID, E2E_USERNAME, E2E_PASSWORD). Sprawdź zmienne środowiskowe.',
+		);
 	}
 
 	// Sprawdź czy użytkownik jest już zalogowany
@@ -80,9 +73,9 @@ export async function createAuthenticatedE2ESupabaseClient() {
  */
 export function getE2EUserData() {
 	return {
-		id: process.env.E2E_USERNAME_ID || 'test_user_id',
-		username: process.env.E2E_USERNAME || 'test@example.com',
-		password: process.env.E2E_PASSWORD || 'test_password',
+		id: process.env.E2E_USERNAME_ID,
+		username: process.env.E2E_USERNAME,
+		password: process.env.E2E_PASSWORD,
 	};
 }
 
@@ -100,10 +93,8 @@ export function validateE2EConfig() {
 	const missing = required.filter((key) => !process.env[key]);
 
 	if (missing.length > 0) {
-		console.warn(
-			`⚠️ Brak niektórych zmiennych środowiskowych: ${missing.join(
-				', ',
-			)} - używam wartości domyślnych`,
+		throw new Error(
+			`Brak wymaganych zmiennych środowiskowych: ${missing.join(', ')}`,
 		);
 	}
 

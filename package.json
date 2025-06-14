@@ -5,6 +5,7 @@
 	"scripts": {
 		"dev": "next dev --turbopack",
 		"build": "next build",
+		"build:test": "cross-env NODE_ENV=test next build",
 		"start": "next start",
 		"lint": "next lint --fix --dir src app",
 		"format": "prettier --write \"**/*.{ts,tsx,js,jsx,md,mdx,css,yaml,yml}\"",
@@ -71,7 +72,8 @@
 		"tailwindcss": "^4",
 		"tw-animate-css": "^1.2.9",
 		"typescript": "^5",
-		"vitest": "^3.2.3"
+		"vitest": "^3.2.3",
+		"cross-env": "^7.0.3"
 	},
 	"description": "- [10xCards](#10xcards)\r   - [Table of Contents](#table-of-contents)\r   - [Project Description](#project-description)\r   - [Tech Stack](#tech-stack)\r   - [Getting Started Locally](#getting-started-locally)\r   - [Available Scripts](#available-scripts)\r   - [Project Scope](#project-scope)\r   - [Project Status](#project-status)\r   - [License](#license)",
 	"main": "index.js",

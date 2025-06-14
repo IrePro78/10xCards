@@ -49,6 +49,17 @@ if (!isCI) {
 	}
 }
 
+// Przygotuj zmienne środowiskowe dla webServer
+const env: Record<string, string> = {
+	...process.env, // Przekaż wszystkie zmienne z procesu do webServer
+	// Upewnij się że Supabase ma poprawne nazwy zmiennych
+	NEXT_PUBLIC_SUPABASE_URL: process.env.SUPABASE_URL || '',
+	NEXT_PUBLIC_SUPABASE_ANON_KEY:
+		process.env.SUPABASE_PUBLIC_KEY || '',
+	// Wymuś NODE_ENV=test na końcu
+	NODE_ENV: 'test',
+};
+
 export default defineConfig({
 	testDir: './e2e',
 	fullyParallel: true,
@@ -76,17 +87,6 @@ export default defineConfig({
 		stdout: 'pipe',
 		stderr: 'pipe',
 		timeout: 120000, // 2 minuty na start serwera w CI
-		env: {
-			NODE_ENV: 'test',
-			// W CI te zmienne będą dostępne z GitHub Actions
-			SUPABASE_URL: process.env.SUPABASE_URL || '',
-			NEXT_PUBLIC_SUPABASE_URL: process.env.SUPABASE_URL || '',
-			SUPABASE_PUBLIC_KEY: process.env.SUPABASE_PUBLIC_KEY || '',
-			NEXT_PUBLIC_SUPABASE_ANON_KEY:
-				process.env.SUPABASE_PUBLIC_KEY || '',
-			E2E_USERNAME_ID: process.env.E2E_USERNAME_ID || '',
-			E2E_USERNAME: process.env.E2E_USERNAME || '',
-			E2E_PASSWORD: process.env.E2E_PASSWORD || '',
-		},
+		env, // Przekaż wszystkie zmienne środowiskowe
 	},
 });

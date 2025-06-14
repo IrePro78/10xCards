@@ -8,6 +8,7 @@ export async function GET(request: Request) {
 	const code = searchParams.get('code');
 	const next = searchParams.get('next');
 	const type = searchParams.get('type');
+	const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
 
 	logToFile(`\n=== CALLBACK HANDLER CALLED ===`);
 	logToFile(`URL: ${request.url}`);
@@ -20,12 +21,12 @@ export async function GET(request: Request) {
 
 	// Jeśli to jest resetowanie hasła, nie tworzymy sesji
 	if (type === 'recovery' && code) {
-		const redirectUrl = new URL(
-			'/reset-password',
-			process.env.NEXT_PUBLIC_SITE_URL,
-		);
+		// Użyj obecnego hosta jako bazy dla przekierowania
+		const redirectUrl = new URL('/reset-password', baseUrl);
 		redirectUrl.searchParams.set('code', code);
 		redirectUrl.searchParams.set('type', type);
+
+		logToFile(`Redirecting to: ${redirectUrl.toString()}`);
 
 		// Wyloguj użytkownika przed przekierowaniem
 		const supabase = await createSupabaseServerClient();
@@ -42,12 +43,12 @@ export async function GET(request: Request) {
 
 		if (error) {
 			console.error('Błąd wymiany kodu na sesję:', error);
-			return NextResponse.redirect(new URL('/login', request.url));
+			return NextResponse.redirect(new URL('/login', baseUrl));
 		}
 
-		return NextResponse.redirect(new URL('/generate', request.url));
+		return NextResponse.redirect(new URL('/generate', baseUrl));
 	}
 
 	// Domyślne przekierowanie
-	return NextResponse.redirect(new URL('/login', request.url));
+	return NextResponse.redirect(new URL('/login', baseUrl));
 }

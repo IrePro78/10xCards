@@ -86,7 +86,7 @@ jobs:
 
       - name: Run TruffleHog
         if: steps.check_commits.outputs.skip_trufflehog != 'true'
-        uses: trufflesecurity/trufflehog@main
+        uses: trufflesecurity/trufflehog@v3.63.7
         with:
           path: .
           base: HEAD^

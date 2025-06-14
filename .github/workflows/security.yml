@@ -69,11 +69,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if BASE and HEAD are different
+        id: check_commits
+        run: |
+          BASE_COMMIT=$(git rev-parse HEAD^)
+          HEAD_COMMIT=$(git rev-parse HEAD)
+          if [ "$BASE_COMMIT" = "$HEAD_COMMIT" ]; then
+            echo "skip_trufflehog=true" >> $GITHUB_OUTPUT
+            echo "No changes detected between commits. Skipping TruffleHog."
+          else
+            echo "skip_trufflehog=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Run TruffleHog
+        if: steps.check_commits.outputs.skip_trufflehog != 'true'
         uses: trufflesecurity/trufflehog@main
         with:
           path: .
-          base: HEAD
+          base: HEAD^
           head: ${{ github.sha }}
           extra_args: --only-verified --fail

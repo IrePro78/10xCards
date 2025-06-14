@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
 			return NextResponse.redirect(
 				new URL(
 					`/auth/callback?code=${code}&next=/reset-password`,
-					request.url,
+					process.env.NEXT_PUBLIC_SITE_URL,
 				),
 			);
 		}

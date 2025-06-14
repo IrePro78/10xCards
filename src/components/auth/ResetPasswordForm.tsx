@@ -121,9 +121,6 @@ export function ResetPasswordForm() {
 			} else if (result?.success) {
 				setIsSuccess(true);
 				toast.success('Hasło zostało pomyślnie zmienione');
-				setTimeout(() => {
-					window.location.href = '/login';
-				}, 2000);
 			}
 		} catch (err) {
 			console.error('Błąd podczas wysyłania formularza:', err);

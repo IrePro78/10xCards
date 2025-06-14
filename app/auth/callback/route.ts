@@ -20,7 +20,10 @@ export async function GET(request: Request) {
 
 	// Jeśli to jest resetowanie hasła, nie tworzymy sesji
 	if (type === 'recovery' && code) {
-		const redirectUrl = new URL('/reset-password', request.url);
+		const redirectUrl = new URL(
+			'/reset-password',
+			process.env.NEXT_PUBLIC_SITE_URL,
+		);
 		redirectUrl.searchParams.set('code', code);
 
 		// Wyloguj użytkownika przed przekierowaniem

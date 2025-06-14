@@ -192,6 +192,7 @@ export async function resetPassword(formData: FormData) {
 		await supabase.auth.signOut();
 
 		revalidatePath('/', 'layout');
+		redirect('/login');
 		return { success: true };
 	} catch (err) {
 		console.error(

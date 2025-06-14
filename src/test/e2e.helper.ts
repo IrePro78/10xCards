@@ -1,6 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
 /**
+ * Prosty storage w pamięci dla testów e2e
+ */
+const memoryStorage = new Map<string, string>();
+
+/**
  * Prosty helper do testów e2e z Supabase
  * Używa zmiennych z .env.test lub zmiennych środowiskowych CI
  */
@@ -14,12 +19,61 @@ export function createE2ESupabaseClient() {
 		);
 	}
 
+	console.log('🔌 Tworzę klienta Supabase:', {
+		url: supabaseUrl,
+		key: `${supabaseKey.slice(0, 10)}...`,
+	});
+
 	return createClient(supabaseUrl, supabaseKey, {
 		auth: {
-			autoRefreshToken: false,
-			persistSession: false,
+			autoRefreshToken: true,
+			persistSession: true,
+			storage: {
+				getItem: (key: string) => {
+					console.log('📦 Pobieranie z storage:', key);
+					const value = memoryStorage.get(key);
+					console.log(
+						'📦 Wartość z storage:',
+						value ? 'znaleziono' : 'brak',
+					);
+					return value ?? null;
+				},
+				setItem: (key: string, value: string) => {
+					console.log('📦 Zapisywanie do storage:', key, value);
+					memoryStorage.set(key, value);
+				},
+				removeItem: (key: string) => {
+					console.log('📦 Usuwanie z storage:', key);
+					memoryStorage.delete(key);
+				},
+			},
 		},
 	});
+}
+
+/**
+ * Czeka na dostępność tokenu sesji
+ */
+async function waitForSession(
+	supabase: ReturnType<typeof createE2ESupabaseClient>,
+	maxAttempts = 10,
+) {
+	for (let i = 0; i < maxAttempts; i++) {
+		console.log(
+			`🔄 Próba ${i + 1}/${maxAttempts} - czekam na token sesji...`,
+		);
+		const {
+			data: { session },
+		} = await supabase.auth.getSession();
+		if (session?.access_token) {
+			console.log('✅ Token sesji dostępny');
+			return session;
+		}
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+	}
+	throw new Error(
+		`Nie udało się uzyskać tokenu sesji po ${maxAttempts} próbach`,
+	);
 }
 
 /**
@@ -29,6 +83,11 @@ export async function createAuthenticatedE2ESupabaseClient() {
 	const supabase = createE2ESupabaseClient();
 	const userData = getE2EUserData();
 
+	console.log('👤 Dane użytkownika testowego:', {
+		id: userData.id,
+		email: userData.username,
+	});
+
 	// Sprawdź czy dane użytkownika są dostępne
 	if (!userData.username || !userData.password || !userData.id) {
 		throw new Error(
@@ -37,34 +96,53 @@ export async function createAuthenticatedE2ESupabaseClient() {
 	}
 
 	// Sprawdź czy użytkownik jest już zalogowany
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+	console.log('🔍 Sprawdzam czy użytkownik jest już zalogowany...');
+	try {
+		await waitForSession(supabase);
+		const {
+			data: { user },
+		} = await supabase.auth.getUser();
 
-	if (user && user.id === userData.id) {
-		console.log('✅ Użytkownik testowy już zalogowany');
-		return supabase;
+		if (user && user.id === userData.id) {
+			console.log('✅ Użytkownik testowy już zalogowany:', user.id);
+			return supabase;
+		}
+	} catch {
+		console.log(
+			'❌ Użytkownik nie jest zalogowany, próbuję zalogować...',
+		);
 	}
 
 	// Zaloguj się jako użytkownik testowy
-	console.log('🔐 Logowanie użytkownika testowego...');
+	console.log('🔐 Próba logowania użytkownika testowego...');
 	const { data, error } = await supabase.auth.signInWithPassword({
 		email: userData.username,
 		password: userData.password,
 	});
 
 	if (error) {
-		console.error('Błąd podczas logowania:', error);
+		console.error('❌ Błąd podczas logowania:', {
+			message: error.message,
+			status: error.status,
+			name: error.name,
+		});
 		throw new Error(
 			`Nie można zalogować użytkownika testowego: ${error.message}`,
 		);
 	}
 
 	if (!data.user) {
+		console.error('❌ Logowanie nie zwróciło danych użytkownika');
 		throw new Error('Logowanie nie zwróciło danych użytkownika');
 	}
 
-	console.log('✅ Użytkownik testowy zalogowany:', data.user.id);
+	// Poczekaj na dostępność tokenu sesji
+	await waitForSession(supabase);
+
+	console.log('✅ Użytkownik testowy zalogowany:', {
+		id: data.user.id,
+		email: data.user.email,
+	});
 	return supabase;
 }
 

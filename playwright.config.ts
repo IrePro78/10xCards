@@ -2,16 +2,35 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
+// Debug środowiska
+console.log('Debug środowiska:');
+console.log('process.env.CI:', process.env.CI);
+console.log(
+	'process.env.GITHUB_ACTIONS:',
+	process.env.GITHUB_ACTIONS,
+);
+console.log('process.cwd():', process.cwd());
+console.log('__dirname:', __dirname);
+
 // Sprawdź czy jesteśmy w środowisku CI
-const isCI = process.env.CI || process.env.GITHUB_ACTIONS || false;
+const isCI =
+	Boolean(process.env.CI) ||
+	Boolean(process.env.GITHUB_ACTIONS) ||
+	process.cwd().includes('/home/runner/work/');
+
+console.log('isCI:', isCI);
 
 // W CI nie ładujemy .env.test - zmienne są ustawiane przez workflow
 if (!isCI) {
-	dotenv.config({ path: path.resolve(process.cwd(), '.env.test') });
+	try {
+		dotenv.config({ path: path.resolve(process.cwd(), '.env.test') });
+		console.log('.env.test załadowany');
+	} catch (error) {
+		console.error('Błąd ładowania .env.test:', error);
+	}
 }
 
 // Sprawdź czy wszystkie wymagane zmienne są dostępne
-// ale tylko jeśli nie jesteśmy w trakcie budowania w CI
 const required = [
 	'SUPABASE_URL',
 	'SUPABASE_PUBLIC_KEY',

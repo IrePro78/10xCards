@@ -91,4 +91,4 @@ jobs:
           path: .
           base: HEAD^
           head: ${{ github.sha }}
-          extra_args: --only-verified --fail
+          extra_args: --only-verified

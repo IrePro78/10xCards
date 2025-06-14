@@ -25,6 +25,7 @@ export async function GET(request: Request) {
 			process.env.NEXT_PUBLIC_SITE_URL,
 		);
 		redirectUrl.searchParams.set('code', code);
+		redirectUrl.searchParams.set('type', type);
 
 		// Wyloguj użytkownika przed przekierowaniem
 		const supabase = await createSupabaseServerClient();

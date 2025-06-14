@@ -30,25 +30,6 @@ if (!isCI) {
 	}
 }
 
-// Sprawdź czy wszystkie wymagane zmienne są dostępne
-const required = [
-	'SUPABASE_URL',
-	'SUPABASE_PUBLIC_KEY',
-	'E2E_USERNAME_ID',
-	'E2E_USERNAME',
-	'E2E_PASSWORD',
-];
-
-// W CI zmienne są ustawiane później, więc pomijamy tę walidację
-if (!isCI) {
-	const missing = required.filter((key) => !process.env[key]);
-	if (missing.length > 0) {
-		throw new Error(
-			`Brak wymaganych zmiennych środowiskowych: ${missing.join(', ')}`,
-		);
-	}
-}
-
 // Przygotuj zmienne środowiskowe dla webServer
 const env: Record<string, string> = {
 	...process.env, // Przekaż wszystkie zmienne z procesu do webServer
@@ -86,7 +67,7 @@ export default defineConfig({
 		reuseExistingServer: !isCI,
 		stdout: 'pipe',
 		stderr: 'pipe',
-		timeout: 120000, // 2 minuty na start serwera w CI
+		timeout: 120000,
 		env, // Przekaż wszystkie zmienne środowiskowe
 	},
 });
